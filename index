@@ -1,0 +1,535 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1/17 婚禮籌備手冊｜台北漢來大飯店</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;600;700&family=Noto+Sans+TC:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ivory:#F7F4EF;
+    --ivory-deep:#EBE4D8;
+    --wine:#2E2049;
+    --wine-deep:#1B1330;
+    --charcoal:#211A2C;
+    --charcoal-soft:#6E6578;
+    --gold:#B7935A;
+    --gold-soft:#E3D2AE;
+    --blush:#F1E7DE;
+    --line:#DDD3C2;
+    --white:#FFFFFF;
+    --xi-red:#7B1E3A;
+    --done:#8E9E7E;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--ivory); color:var(--charcoal);
+    font-family:'Noto Sans TC', sans-serif; line-height:1.75; -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.serif{font-family:'Noto Serif TC', serif; margin:0; color:var(--charcoal);}
+  .numeral{font-family:'Cormorant Garamond', serif;}
+  .wrap{max-width:920px; margin:0 auto; padding:0 24px;}
+  @media (max-width:480px){ .wrap{padding:0 16px;} }
+  button{font-family:inherit; cursor:pointer;}
+  input, textarea{font-family:inherit;}
+
+  /* ---------- header ---------- */
+  header{background:var(--wine-deep); color:var(--white); padding:40px 0 32px;}
+  .header-eyebrow{font-size:.75rem; letter-spacing:.2em; color:var(--gold-soft); margin-bottom:10px;}
+  header h1{font-size:clamp(1.5rem,4vw,2.1rem); font-weight:700; color:var(--white); line-height:1.5;}
+  .header-meta{margin-top:10px; font-size:.9rem; color:rgba(255,255,255,.7);}
+  .countdown-row{display:flex; align-items:baseline; gap:10px; margin-top:22px;}
+  .countdown-num{font-family:'Cormorant Garamond', serif; font-size:3rem; font-weight:700; color:var(--gold-soft); line-height:1;}
+  .countdown-label{font-size:.85rem; color:rgba(255,255,255,.65);}
+  .progress-row{margin-top:22px;}
+  .progress-label{display:flex; justify-content:space-between; font-size:.78rem; color:rgba(255,255,255,.65); margin-bottom:6px;}
+  .progress-track{height:6px; background:rgba(255,255,255,.15); border-radius:4px; overflow:hidden;}
+  .progress-fill{height:100%; background:var(--gold-soft); border-radius:4px; transition:width .4s ease;}
+
+  /* ---------- tabs ---------- */
+  .tabnav-shell{position:sticky; top:0; z-index:30; background:rgba(247,244,239,.94); backdrop-filter:blur(6px); border-bottom:1px solid var(--line);}
+  .sync-bar{
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    padding:10px 0; font-size:.78rem; color:var(--charcoal-soft); border-bottom:1px solid var(--line);
+  }
+  .sync-bar.error{color:var(--xi-red);}
+  #refreshBtn{
+    border:1px solid var(--line); background:none; padding:5px 12px; border-radius:20px;
+    font-size:.76rem; color:var(--charcoal-soft);
+  }
+  #refreshBtn:hover{border-color:var(--wine); color:var(--wine);}
+  .tabnav{display:flex; gap:4px; max-width:920px; margin:0 auto; padding:0 24px; overflow-x:auto;}
+  .tab-btn{background:none; border:none; padding:16px 16px 13px; font-size:.9rem; color:var(--charcoal-soft); white-space:nowrap; position:relative; letter-spacing:.02em;}
+  .tab-btn.active{color:var(--wine); font-weight:700;}
+  .tab-btn.active::after{content:""; position:absolute; bottom:-1px; left:0; right:0; height:3px; background:var(--gold);}
+
+  .panel{display:none; padding:36px 0 60px;}
+  .panel.active{display:block;}
+  .section-head{margin-bottom:28px;}
+  .section-head h2{font-size:1.4rem; font-weight:700;}
+  .section-head p{color:var(--charcoal-soft); margin-top:8px; font-size:.92rem;}
+
+  /* ---------- checklist ---------- */
+  .phase-block{margin-bottom:30px; border:1.5px solid var(--line); background:var(--white);}
+  .phase-head{
+    display:flex; justify-content:space-between; align-items:center; padding:14px 20px;
+    background:var(--blush); border-bottom:1px solid var(--line);
+  }
+  .phase-title{font-weight:700; font-size:.95rem;}
+  .phase-count{font-size:.78rem; color:var(--charcoal-soft);}
+  .task-row{
+    display:flex; align-items:flex-start; gap:12px; padding:12px 20px; border-top:1px solid var(--ivory-deep);
+  }
+  .task-row:first-of-type{border-top:none;}
+  .task-row input[type="checkbox"]{
+    width:19px; height:19px; margin-top:2px; accent-color:var(--wine); flex:none; cursor:pointer;
+  }
+  .task-text{flex:1; font-size:.92rem;}
+  .task-row.done .task-text{color:var(--charcoal-soft); text-decoration:line-through; text-decoration-color:var(--done);}
+  .task-del{background:none; border:none; color:var(--charcoal-soft); font-size:.78rem; text-decoration:underline; flex:none;}
+  .add-task-row{display:flex; gap:8px; padding:12px 20px; border-top:1px dashed var(--line);}
+  .add-task-row input{flex:1; padding:8px 10px; border:1px solid var(--line); border-radius:2px; font-size:.85rem;}
+  .add-task-row button{padding:8px 16px; background:var(--wine); color:var(--white); border:none; border-radius:2px; font-size:.82rem;}
+
+  /* ---------- itinerary ---------- */
+  .itin-list{border:1.5px solid var(--line); background:var(--white);}
+  .itin-row{
+    display:grid; grid-template-columns:90px 1fr auto; gap:14px; align-items:center;
+    padding:14px 20px; border-top:1px solid var(--ivory-deep);
+  }
+  .itin-row:first-child{border-top:none;}
+  .itin-time{font-family:'Cormorant Garamond', serif; font-size:1.3rem; font-weight:700; color:var(--wine);}
+  .itin-time input{width:100%; border:none; background:none; font-family:inherit; font-size:1.3rem; font-weight:700; color:var(--wine); padding:2px;}
+  .itin-content input{width:100%; border:none; background:none; font-family:inherit; font-size:.92rem; padding:2px; color:var(--charcoal);}
+  .itin-note input{width:100%; border:none; background:none; font-family:inherit; font-size:.78rem; padding:2px; color:var(--charcoal-soft);}
+  .itin-del{background:none; border:none; color:var(--charcoal-soft); font-size:.78rem; text-decoration:underline;}
+  .add-itin-row{padding:14px 20px; border-top:1px dashed var(--line);}
+  .add-itin-row button{padding:9px 18px; background:var(--wine); color:var(--white); border:none; border-radius:2px; font-size:.85rem;}
+
+  /* ---------- vendor table ---------- */
+  .vendor-table-wrap{border:1.5px solid var(--line); background:var(--white); overflow-x:auto;}
+  table.vendor-table{width:100%; border-collapse:collapse; min-width:680px;}
+  table.vendor-table th{
+    text-align:left; font-size:.78rem; color:var(--charcoal-soft); font-weight:600;
+    padding:12px 14px; background:var(--blush); border-bottom:1px solid var(--line); white-space:nowrap;
+  }
+  table.vendor-table td{padding:6px 8px; border-top:1px solid var(--ivory-deep); vertical-align:middle;}
+  table.vendor-table td input{
+    width:100%; border:none; background:none; font-family:inherit; font-size:.86rem; padding:6px; color:var(--charcoal);
+    border-radius:2px;
+  }
+  table.vendor-table td input:focus{background:var(--ivory);}
+  .vendor-del{background:none; border:none; color:var(--charcoal-soft); font-size:.78rem; text-decoration:underline;}
+  .add-vendor-row{padding:14px 20px; border-top:1px dashed var(--line);}
+  .add-vendor-row button{padding:9px 18px; background:var(--wine); color:var(--white); border:none; border-radius:2px; font-size:.85rem;}
+
+  .save-note{font-size:.78rem; color:var(--charcoal-soft); margin-top:18px; line-height:1.7;}
+
+  footer{padding:30px 0; text-align:center; font-size:.78rem; color:var(--charcoal-soft);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="header-eyebrow">JUST.IN WEDDING · 專屬籌備手冊</div>
+    <h1>1/17 婚宴籌備進度</h1>
+    <div class="header-meta">📍 台北漢來大飯店・晚宴　|　顧問：佳時婚禮顧問工作室</div>
+    <div class="countdown-row">
+      <span class="countdown-num numeral" id="countdownNum">—</span>
+      <span class="countdown-label">天後就是婚禮當天（2027/1/17）</span>
+    </div>
+    <div class="progress-row">
+      <div class="progress-label"><span>檢核表完成進度</span><span id="progressPct">0%</span></div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%;"></div></div>
+    </div>
+  </div>
+</header>
+
+<div class="tabnav-shell">
+  <nav class="tabnav" id="tabnav">
+    <button class="tab-btn active" data-tab="checklist">重要事項檢核表</button>
+    <button class="tab-btn" data-tab="itinerary">婚禮流程</button>
+    <button class="tab-btn" data-tab="vendors">廠商（工作人員）聯繫清單</button>
+  </nav>
+</div>
+
+<div class="wrap">
+  <div class="sync-bar">
+    <span id="syncStatus">正在連線同步資料…</span>
+    <button id="refreshBtn">↻ 重新整理</button>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <!-- ================= 檢核表 ================= -->
+  <section class="panel active" id="panel-checklist">
+    <div class="section-head">
+      <h2>重要事項檢核表</h2>
+      <p>依籌備時程分階段列出，完成後直接勾選即可，也可以自行新增項目。所有勾選狀態會即時同步到 Google 試算表，新人與顧問看到的都是同一份最新進度。</p>
+    </div>
+    <div id="checklistContainer"></div>
+    <p class="save-note">＊勾選與編輯內容會即時同步到 Google 試算表，新人與顧問在各自裝置上打開都會看到同一份進度（約每 20 秒自動更新，也可以手動點「重新整理」）。</p>
+  </section>
+
+  <!-- ================= 婚禮流程 ================= -->
+  <section class="panel" id="panel-itinerary">
+    <div class="section-head">
+      <h2>婚禮當天流程</h2>
+      <p>台北漢來大飯店・晚宴，以下為草案流程，可直接點擊修改時間、內容與備註，實際時間將依現場狀況於婚禮前確認定案。</p>
+    </div>
+    <div class="itin-list" id="itinContainer"></div>
+    <div class="add-itin-row"><button id="addItinBtn">＋ 新增流程項目</button></div>
+    <p class="save-note">＊此流程為草案，建議於婚禮前 2 週與總召進行最終確認會議後定案。</p>
+  </section>
+
+  <!-- ================= 廠商聯繫清單 ================= -->
+  <section class="panel" id="panel-vendors">
+    <div class="section-head">
+      <h2>廠商（工作人員）聯繫清單</h2>
+      <p>點擊欄位即可直接編輯，建議婚禮前 1 週補齊所有廠商的到場時間與聯絡窗口。</p>
+    </div>
+    <div class="vendor-table-wrap">
+      <table class="vendor-table">
+        <thead>
+          <tr>
+            <th style="width:14%;">類別</th>
+            <th style="width:20%;">廠商／單位</th>
+            <th style="width:14%;">聯絡人</th>
+            <th style="width:14%;">電話</th>
+            <th style="width:12%;">到場時間</th>
+            <th>備註</th>
+            <th style="width:40px;"></th>
+          </tr>
+        </thead>
+        <tbody id="vendorTbody"></tbody>
+      </table>
+    </div>
+    <div class="add-vendor-row"><button id="addVendorBtn">＋ 新增廠商</button></div>
+    <p class="save-note">＊聯絡資訊會即時同步到 Google 試算表，建議仍定期在試算表裡備份一份，避免誤刪資料。</p>
+  </section>
+
+</main>
+
+<footer>Just.in Wedding 佳時婚禮顧問工作室・專屬籌備手冊</footer>
+
+<script>
+(function(){
+  // ---------- tabs ----------
+  var tabs = document.querySelectorAll('.tab-btn');
+  function activateTab(name){
+    tabs.forEach(function(t){ t.classList.toggle('active', t.dataset.tab === name); });
+    document.querySelectorAll('.panel').forEach(function(p){ p.classList.toggle('active', p.id === 'panel-'+name); });
+  }
+  tabs.forEach(function(btn){ btn.addEventListener('click', function(){ activateTab(btn.dataset.tab); }); });
+
+  // ---------- countdown ----------
+  var WEDDING_DATE = new Date('2027-01-17T00:00:00');
+  function updateCountdown(){
+    var now = new Date();
+    var diffDays = Math.ceil((WEDDING_DATE - now) / (1000*60*60*24));
+    document.getElementById('countdownNum').textContent = diffDays > 0 ? diffDays : (diffDays === 0 ? '就是今天' : '已完成');
+  }
+  updateCountdown();
+
+  // ===== Google Apps Script 連線設定 =====
+  // 部署完成後，把 /exec 結尾的網址貼在這裡取代預留字串
+  var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwR_9nqohpokyeSHnevUfOKiezxsSWU2XEW70IuRXcBpSIvAdzWdKAqvCkhy54Gkt-1/exec";
+
+  var syncStatusEl = document.getElementById('syncStatus');
+  var syncBarEl = document.querySelector('.sync-bar');
+  var refreshBtn = document.getElementById('refreshBtn');
+
+  var state = { Checklist: [], Itinerary: [], Vendors: [] };
+  var isConfigured = APPS_SCRIPT_URL && APPS_SCRIPT_URL.indexOf('PASTE_YOUR') !== 0;
+
+  function setSyncStatus(text, isError){
+    syncStatusEl.textContent = text;
+    syncBarEl.classList.toggle('error', !!isError);
+  }
+
+  function toBool(v){
+    return v === true || v === 'TRUE' || v === 'true' || v === 1 || v === '1';
+  }
+  function toNum(v){
+    var n = parseFloat(v);
+    return isNaN(n) ? 0 : n;
+  }
+
+  async function loadAll(silent){
+    if(!isConfigured){
+      setSyncStatus('⚠️ 尚未設定 Google Apps Script 連線，請完成設定後在程式碼中貼上 APPS_SCRIPT_URL。', true);
+      return;
+    }
+    if(!silent) setSyncStatus('正在讀取最新資料…');
+    try{
+      var res = await fetch(APPS_SCRIPT_URL + '?_=' + Date.now());
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      var data = await res.json();
+      state.Checklist = (data.Checklist || []).map(normalizeChecklistRow);
+      state.Itinerary = (data.Itinerary || []).map(normalizeItinRow);
+      state.Vendors = (data.Vendors || []).map(normalizeVendorRow);
+      renderChecklist();
+      renderItin();
+      renderVendors();
+      setSyncStatus('已同步（' + new Date().toLocaleTimeString('zh-TW') + '）');
+    }catch(e){
+      console.error('Sync load error', e);
+      setSyncStatus('⚠️ 讀取失敗，請確認 Apps Script 是否已正確部署，或稍後點「重新整理」再試一次。', true);
+    }
+  }
+
+  async function postAction(payload){
+    if(!isConfigured) return null;
+    try{
+      var res = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        headers: {'Content-Type': 'text/plain;charset=utf-8'},
+        body: JSON.stringify(payload)
+      });
+      var data = await res.json();
+      if(!data.ok) throw new Error(data.error || 'unknown error');
+      return data;
+    }catch(e){
+      console.error('Sync write error', e);
+      setSyncStatus('⚠️ 這筆變更同步失敗，請檢查網路連線後點「重新整理」確認狀態。', true);
+      return null;
+    }
+  }
+
+  refreshBtn.addEventListener('click', function(){ loadAll(false); });
+  // 每 20 秒自動同步一次，若使用者正在輸入欄位則跳過，避免打斷輸入
+  setInterval(function(){
+    var active = document.activeElement;
+    var typing = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA');
+    if(!typing) loadAll(true);
+  }, 20000);
+
+  function normalizeChecklistRow(r){
+    return {id:String(r.id), phase:r.phase||'', text:r.text||'', done:toBool(r.done), order:toNum(r.order)};
+  }
+  function normalizeItinRow(r){
+    return {id:String(r.id), time:r.time||'', content:r.content||'', note:r.note||'', order:toNum(r.order)};
+  }
+  function normalizeVendorRow(r){
+    return {id:String(r.id), category:r.category||'', name:r.name||'', contact:r.contact||'', phone:r.phone||'', arrival:r.arrival||'', note:r.note||'', order:toNum(r.order)};
+  }
+
+  function newId(prefix){ return prefix + '-' + Date.now() + '-' + Math.random().toString(36).slice(2,6); }
+
+  // ================= 檢核表 =================
+  function updateProgress(){
+    var total = state.Checklist.length;
+    var done = state.Checklist.filter(function(i){ return i.done; }).length;
+    var pct = total ? Math.round(done/total*100) : 0;
+    document.getElementById('progressPct').textContent = pct + '%（' + done + '/' + total + '）';
+    document.getElementById('progressFill').style.width = pct + '%';
+  }
+
+  function groupByPhase(items){
+    var order = [], groups = {};
+    items.slice().sort(function(a,b){ return a.order - b.order; }).forEach(function(it){
+      if(!groups[it.phase]){ groups[it.phase] = []; order.push(it.phase); }
+      groups[it.phase].push(it);
+    });
+    return order.map(function(phase){ return {phase:phase, items:groups[phase]}; });
+  }
+
+  function renderChecklist(){
+    var container = document.getElementById('checklistContainer');
+    container.innerHTML = '';
+    var groups = groupByPhase(state.Checklist);
+    groups.forEach(function(group){
+      var block = document.createElement('div');
+      block.className = 'phase-block';
+
+      var head = document.createElement('div');
+      head.className = 'phase-head';
+      var doneCount = group.items.filter(function(i){ return i.done; }).length;
+      head.innerHTML = '<span class="phase-title">'+group.phase+'</span><span class="phase-count">'+doneCount+' / '+group.items.length+'</span>';
+      block.appendChild(head);
+
+      group.items.forEach(function(item){
+        var row = document.createElement('div');
+        row.className = 'task-row' + (item.done ? ' done' : '');
+        var checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = item.done;
+        checkbox.addEventListener('change', function(){
+          item.done = checkbox.checked;
+          renderChecklist();
+          updateProgress();
+          postAction({action:'update', sheet:'Checklist', id:item.id, fields:{done: item.done ? 'TRUE' : 'FALSE'}});
+        });
+        var text = document.createElement('span');
+        text.className = 'task-text';
+        text.textContent = item.text;
+        var del = document.createElement('button');
+        del.className = 'task-del';
+        del.textContent = '刪除';
+        del.addEventListener('click', function(){
+          state.Checklist = state.Checklist.filter(function(i){ return i.id !== item.id; });
+          renderChecklist();
+          updateProgress();
+          postAction({action:'delete', sheet:'Checklist', id:item.id});
+        });
+        row.appendChild(checkbox);
+        row.appendChild(text);
+        row.appendChild(del);
+        block.appendChild(row);
+      });
+
+      var addRow = document.createElement('div');
+      addRow.className = 'add-task-row';
+      var addInput = document.createElement('input');
+      addInput.type = 'text';
+      addInput.placeholder = '新增這個階段的項目…';
+      var addBtn = document.createElement('button');
+      addBtn.textContent = '新增';
+      addBtn.addEventListener('click', function(){
+        var val = addInput.value.trim();
+        if(!val) return;
+        var maxOrder = state.Checklist.reduce(function(m,i){ return Math.max(m, i.order); }, 0);
+        var item = {id:newId('c'), phase:group.phase, text:val, done:false, order:maxOrder+1};
+        state.Checklist.push(item);
+        addInput.value = '';
+        renderChecklist();
+        updateProgress();
+        postAction({action:'add', sheet:'Checklist', fields:{id:item.id, phase:item.phase, text:item.text, done:'FALSE', order:item.order}});
+      });
+      addInput.addEventListener('keydown', function(e){ if(e.key === 'Enter') addBtn.click(); });
+      addRow.appendChild(addInput);
+      addRow.appendChild(addBtn);
+      block.appendChild(addRow);
+
+      container.appendChild(block);
+    });
+  }
+
+  // ================= 婚禮流程 =================
+  function renderItin(){
+    var container = document.getElementById('itinContainer');
+    container.innerHTML = '';
+    var rows = state.Itinerary.slice().sort(function(a,b){ return a.order - b.order; });
+    rows.forEach(function(row){
+      var el = document.createElement('div');
+      el.className = 'itin-row';
+
+      var timeWrap = document.createElement('div');
+      timeWrap.className = 'itin-time';
+      var timeInput = document.createElement('input');
+      timeInput.type = 'text';
+      timeInput.value = row.time;
+      timeInput.addEventListener('change', function(){
+        row.time = timeInput.value;
+        postAction({action:'update', sheet:'Itinerary', id:row.id, fields:{time: row.time}});
+      });
+      timeWrap.appendChild(timeInput);
+
+      var contentWrap = document.createElement('div');
+      var contentInput = document.createElement('input');
+      contentInput.type = 'text';
+      contentInput.className = 'itin-content';
+      contentInput.value = row.content;
+      contentInput.addEventListener('change', function(){
+        row.content = contentInput.value;
+        postAction({action:'update', sheet:'Itinerary', id:row.id, fields:{content: row.content}});
+      });
+      var noteInput = document.createElement('input');
+      noteInput.type = 'text';
+      noteInput.className = 'itin-note';
+      noteInput.placeholder = '備註…';
+      noteInput.value = row.note || '';
+      noteInput.addEventListener('change', function(){
+        row.note = noteInput.value;
+        postAction({action:'update', sheet:'Itinerary', id:row.id, fields:{note: row.note}});
+      });
+      contentWrap.appendChild(contentInput);
+      contentWrap.appendChild(noteInput);
+
+      var del = document.createElement('button');
+      del.className = 'itin-del';
+      del.textContent = '刪除';
+      del.addEventListener('click', function(){
+        state.Itinerary = state.Itinerary.filter(function(i){ return i.id !== row.id; });
+        renderItin();
+        postAction({action:'delete', sheet:'Itinerary', id:row.id});
+      });
+
+      el.appendChild(timeWrap);
+      el.appendChild(contentWrap);
+      el.appendChild(del);
+      container.appendChild(el);
+    });
+  }
+
+  document.getElementById('addItinBtn').addEventListener('click', function(){
+    var maxOrder = state.Itinerary.reduce(function(m,i){ return Math.max(m, i.order); }, 0);
+    var row = {id:newId('i'), time:'', content:'', note:'', order:maxOrder+1};
+    state.Itinerary.push(row);
+    renderItin();
+    postAction({action:'add', sheet:'Itinerary', fields:{id:row.id, time:'', content:'', note:'', order:row.order}});
+  });
+
+  // ================= 廠商聯繫清單 =================
+  function makeVendorCell(row, field, placeholder){
+    var td = document.createElement('td');
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.value = row[field] || '';
+    if(placeholder) input.placeholder = placeholder;
+    input.addEventListener('change', function(){
+      row[field] = input.value;
+      var fields = {};
+      fields[field] = input.value;
+      postAction({action:'update', sheet:'Vendors', id:row.id, fields:fields});
+    });
+    td.appendChild(input);
+    return td;
+  }
+
+  function renderVendors(){
+    var tbody = document.getElementById('vendorTbody');
+    tbody.innerHTML = '';
+    var rows = state.Vendors.slice().sort(function(a,b){ return a.order - b.order; });
+    rows.forEach(function(row){
+      var tr = document.createElement('tr');
+      tr.appendChild(makeVendorCell(row, 'category', '類別'));
+      tr.appendChild(makeVendorCell(row, 'name', '廠商名稱'));
+      tr.appendChild(makeVendorCell(row, 'contact', '聯絡人'));
+      tr.appendChild(makeVendorCell(row, 'phone', '電話'));
+      tr.appendChild(makeVendorCell(row, 'arrival', '到場時間'));
+      tr.appendChild(makeVendorCell(row, 'note', '備註'));
+      var delTd = document.createElement('td');
+      var delBtn = document.createElement('button');
+      delBtn.className = 'vendor-del';
+      delBtn.textContent = '刪除';
+      delBtn.addEventListener('click', function(){
+        state.Vendors = state.Vendors.filter(function(i){ return i.id !== row.id; });
+        renderVendors();
+        postAction({action:'delete', sheet:'Vendors', id:row.id});
+      });
+      delTd.appendChild(delBtn);
+      tr.appendChild(delTd);
+      tbody.appendChild(tr);
+    });
+  }
+
+  document.getElementById('addVendorBtn').addEventListener('click', function(){
+    var maxOrder = state.Vendors.reduce(function(m,i){ return Math.max(m, i.order); }, 0);
+    var row = {id:newId('v'), category:'', name:'', contact:'', phone:'', arrival:'', note:'', order:maxOrder+1};
+    state.Vendors.push(row);
+    renderVendors();
+    postAction({action:'add', sheet:'Vendors', fields:{id:row.id, category:'', name:'', contact:'', phone:'', arrival:'', note:'', order:row.order}});
+  });
+
+  loadAll(false);
+})();
+</script>
+
+</body>
+</html>
