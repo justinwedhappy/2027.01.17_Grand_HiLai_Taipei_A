@@ -79,6 +79,9 @@
     background:var(--blush); border-bottom:1px solid var(--line);
   }
   .phase-title{font-weight:700; font-size:.95rem;}
+  .phase-due{font-weight:400; font-size:.78rem; color:var(--charcoal-soft);}
+  .checklist-legend{display:flex; gap:16px; flex-wrap:wrap; font-size:.78rem; color:var(--charcoal-soft); margin-bottom:16px;}
+  .legend-dot{display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:6px; vertical-align:middle; border:1px solid var(--line);}
   .phase-count{font-size:.78rem; color:var(--charcoal-soft);}
   .task-row{
     display:flex; align-items:flex-start; gap:12px; padding:12px 20px; border-top:1px solid var(--ivory-deep);
@@ -89,6 +92,9 @@
   }
   .task-text{flex:1; font-size:.92rem;}
   .task-row.done .task-text{color:var(--charcoal-soft); text-decoration:line-through; text-decoration-color:var(--done);}
+  .task-row.status-overdue{background:#FBE2E2;}
+  .task-row.status-soon{background:#FBF0D2;}
+  .task-row.status-done{background:#EFEFEF;}
   .task-del{background:none; border:none; color:var(--charcoal-soft); font-size:.78rem; text-decoration:underline; flex:none;}
   .add-task-row{display:flex; gap:8px; padding:12px 20px; border-top:1px dashed var(--line);}
   .add-task-row input{flex:1; padding:8px 10px; border:1px solid var(--line); border-radius:2px; font-size:.85rem;}
@@ -171,6 +177,11 @@
     <div class="section-head">
       <h2>重要事項檢核表</h2>
       <p>依籌備時程分階段列出，完成後直接勾選即可，也可以自行新增項目。所有勾選狀態會即時同步到 Google 試算表，新人與顧問看到的都是同一份最新進度。</p>
+    </div>
+    <div class="checklist-legend">
+      <span><span class="legend-dot" style="background:#FBE2E2;"></span>已逾期</span>
+      <span><span class="legend-dot" style="background:#FBF0D2;"></span>14 天內到期</span>
+      <span><span class="legend-dot" style="background:#EFEFEF;"></span>已完成</span>
     </div>
     <div id="checklistContainer"></div>
     <p class="save-note">＊勾選與編輯內容會即時同步到 Google 試算表，新人與顧問在各自裝置上打開都會看到同一份進度（約每 20 秒自動更新，也可以手動點「重新整理」）。</p>
@@ -321,6 +332,44 @@
 
   function newId(prefix){ return prefix + '-' + Date.now() + '-' + Math.random().toString(36).slice(2,6); }
 
+  // ================= 檢核表：階段截止日 & 狀態顏色 =================
+  // 依 2027/1/17 婚禮日回推的實際截止日期，同時對應舊版（相對時間）與新版（實際日期）階段名稱，
+  // 這樣不管試算表裡目前存的是哪一種文字，都抓得到正確的截止日。
+  var PHASE_DUE_DATES = {
+    '婚禮前 3-4 個月（現在）': '2026-10-17',
+    '2026/10/17 前': '2026-10-17',
+    '婚禮前 2-3 個月': '2026-11-17',
+    '2026/11/17 前': '2026-11-17',
+    '婚禮前 1 個月': '2026-12-17',
+    '2026/12/17 前': '2026-12-17',
+    '婚禮前 2 週': '2027-01-03',
+    '2027/01/03 前': '2027-01-03',
+    '婚禮前 1 週': '2027-01-10',
+    '2027/01/10 前': '2027-01-10',
+    '婚禮當天': '2027-01-17',
+    '2027/01/17 婚禮當天': '2027-01-17'
+  };
+  function getPhaseDueDate(phase){
+    return PHASE_DUE_DATES[phase] || null;
+  }
+  function todayStr(){
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+  // 回傳 'overdue'（已逾期）｜'soon'（14 天內到期）｜'done'（已完成）｜''（正常）
+  function taskStatus(item){
+    if(item.done) return 'done';
+    var due = getPhaseDueDate(item.phase);
+    if(!due) return '';
+    var today = todayStr();
+    if(today > due) return 'overdue';
+    var dueDate = new Date(due + 'T00:00:00');
+    var soonThreshold = new Date(dueDate.getTime() - 14*24*60*60*1000);
+    var soonStr = soonThreshold.getFullYear() + '-' + String(soonThreshold.getMonth()+1).padStart(2,'0') + '-' + String(soonThreshold.getDate()).padStart(2,'0');
+    if(today >= soonStr) return 'soon';
+    return '';
+  }
+
   // ================= 檢核表 =================
   function updateProgress(){
     var total = state.Checklist.length;
@@ -350,12 +399,15 @@
       var head = document.createElement('div');
       head.className = 'phase-head';
       var doneCount = group.items.filter(function(i){ return i.done; }).length;
-      head.innerHTML = '<span class="phase-title">'+group.phase+'</span><span class="phase-count">'+doneCount+' / '+group.items.length+'</span>';
+      var due = getPhaseDueDate(group.phase);
+      var dueLabel = due ? '　<span class="phase-due">截止：'+due.replace(/-/g,'/')+'</span>' : '';
+      head.innerHTML = '<span class="phase-title">'+group.phase+dueLabel+'</span><span class="phase-count">'+doneCount+' / '+group.items.length+'</span>';
       block.appendChild(head);
 
       group.items.forEach(function(item){
         var row = document.createElement('div');
-        row.className = 'task-row' + (item.done ? ' done' : '');
+        var status = taskStatus(item);
+        row.className = 'task-row' + (item.done ? ' done' : '') + (status ? ' status-'+status : '');
         var checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.checked = item.done;
