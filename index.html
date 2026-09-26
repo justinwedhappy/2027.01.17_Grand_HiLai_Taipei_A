@@ -84,20 +84,43 @@
   .legend-dot{display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:6px; vertical-align:middle; border:1px solid var(--line);}
   .phase-count{font-size:.78rem; color:var(--charcoal-soft);}
   .task-row{
-    display:flex; align-items:flex-start; gap:12px; padding:12px 20px; border-top:1px solid var(--ivory-deep);
+    display:flex; align-items:center; gap:10px; padding:10px 20px; border-top:1px solid var(--ivory-deep);
+    flex-wrap:wrap;
   }
   .task-row:first-of-type{border-top:none;}
   .task-row input[type="checkbox"]{
-    width:19px; height:19px; margin-top:2px; accent-color:var(--wine); flex:none; cursor:pointer;
+    width:19px; height:19px; accent-color:var(--wine); flex:none; cursor:pointer;
   }
-  .task-text{flex:1; font-size:.92rem;}
+  .task-category{
+    flex:0 0 90px; width:90px; font-size:.76rem; padding:5px 8px; border:1px solid var(--line);
+    border-radius:20px; background:var(--blush); color:var(--wine); text-align:center;
+  }
+  .task-text{
+    flex:1 1 220px; min-width:140px; font-size:.92rem; border:none; background:none; padding:4px 2px; color:var(--charcoal);
+  }
+  .task-text:focus, .task-category:focus{background:var(--ivory); outline:none;}
   .task-row.done .task-text{color:var(--charcoal-soft); text-decoration:line-through; text-decoration-color:var(--done);}
   .task-row.status-overdue{background:#FBE2E2;}
   .task-row.status-soon{background:#FBF0D2;}
   .task-row.status-done{background:#EFEFEF;}
+  .task-link-wrap{flex:0 0 160px; display:flex; align-items:center; gap:6px;}
+  .task-link{
+    flex:1; font-size:.78rem; padding:5px 8px; border:1px solid var(--line); border-radius:2px;
+    background:var(--white); color:var(--charcoal-soft);
+  }
+  .task-link-open{font-size:.76rem; color:var(--wine); white-space:nowrap; text-decoration:underline;}
   .task-del{background:none; border:none; color:var(--charcoal-soft); font-size:.78rem; text-decoration:underline; flex:none;}
-  .add-task-row{display:flex; gap:8px; padding:12px 20px; border-top:1px dashed var(--line);}
-  .add-task-row input{flex:1; padding:8px 10px; border:1px solid var(--line); border-radius:2px; font-size:.85rem;}
+  .task-desc-row{padding:0 20px 10px 39px;}
+  .task-desc-row.status-overdue{background:#FBE2E2;}
+  .task-desc-row.status-soon{background:#FBF0D2;}
+  .task-desc-row.status-done{background:#EFEFEF;}
+  .task-desc{
+    width:100%; font-size:.8rem; font-style:italic; color:var(--charcoal-soft);
+    border:none; background:none; padding:2px;
+  }
+  .task-desc:focus{background:var(--ivory); outline:none; font-style:normal;}
+  .add-task-row{display:flex; gap:8px; padding:12px 20px; border-top:1px dashed var(--line); flex-wrap:wrap;}
+  .add-task-row input{flex:1; min-width:120px; padding:8px 10px; border:1px solid var(--line); border-radius:2px; font-size:.85rem;}
   .add-task-row button{padding:8px 16px; background:var(--wine); color:var(--white); border:none; border-radius:2px; font-size:.82rem;}
 
   /* ---------- itinerary ---------- */
@@ -321,7 +344,7 @@
   }, 20000);
 
   function normalizeChecklistRow(r){
-    return {id:String(r.id), phase:r.phase||'', text:r.text||'', done:toBool(r.done), order:toNum(r.order)};
+    return {id:String(r.id), phase:r.phase||'', category:r.category||'', text:r.text||'', done:toBool(r.done), desc:r.desc||'', link:r.link||'', order:toNum(r.order)};
   }
   function normalizeItinRow(r){
     return {id:String(r.id), time:r.time||'', content:r.content||'', note:r.note||'', order:toNum(r.order)};
@@ -355,6 +378,21 @@
   function todayStr(){
     var d = new Date();
     return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+  // 依截止日算出深灰色說明文字，還原「婚禮前 X 個月／還有 X 天」這種相對時間感
+  function formatRelative(dueDateStr){
+    var due = new Date(dueDateStr + 'T00:00:00');
+    var today = new Date();
+    today.setHours(0,0,0,0);
+    var diffDays = Math.round((due - today) / (1000*60*60*24));
+    if(diffDays > 0){
+      if(diffDays >= 45) return '還有約 ' + Math.round(diffDays/30) + ' 個月';
+      return '還有 ' + diffDays + ' 天';
+    } else if(diffDays === 0){
+      return '就是今天';
+    } else {
+      return '已超過 ' + Math.abs(diffDays) + ' 天';
+    }
   }
   // 回傳 'overdue'（已逾期）｜'soon'（14 天內到期）｜'done'（已完成）｜''（正常）
   function taskStatus(item){
@@ -400,7 +438,7 @@
       head.className = 'phase-head';
       var doneCount = group.items.filter(function(i){ return i.done; }).length;
       var due = getPhaseDueDate(group.phase);
-      var dueLabel = due ? '　<span class="phase-due">截止：'+due.replace(/-/g,'/')+'</span>' : '';
+      var dueLabel = due ? '　<span class="phase-due">'+due.replace(/-/g,'/')+'　'+formatRelative(due)+'</span>' : '';
       head.innerHTML = '<span class="phase-title">'+group.phase+dueLabel+'</span><span class="phase-count">'+doneCount+' / '+group.items.length+'</span>';
       block.appendChild(head);
 
@@ -417,9 +455,49 @@
           updateProgress();
           postAction({action:'update', sheet:'Checklist', id:item.id, fields:{done: item.done ? 'TRUE' : 'FALSE'}});
         });
-        var text = document.createElement('span');
-        text.className = 'task-text';
-        text.textContent = item.text;
+
+        var categoryInput = document.createElement('input');
+        categoryInput.type = 'text';
+        categoryInput.className = 'task-category';
+        categoryInput.placeholder = '大類';
+        categoryInput.value = item.category || '';
+        categoryInput.addEventListener('change', function(){
+          item.category = categoryInput.value;
+          postAction({action:'update', sheet:'Checklist', id:item.id, fields:{category: item.category}});
+        });
+
+        var textInput = document.createElement('input');
+        textInput.type = 'text';
+        textInput.className = 'task-text';
+        textInput.value = item.text;
+        textInput.addEventListener('change', function(){
+          item.text = textInput.value;
+          postAction({action:'update', sheet:'Checklist', id:item.id, fields:{text: item.text}});
+        });
+
+        var linkWrap = document.createElement('div');
+        linkWrap.className = 'task-link-wrap';
+        var linkInput = document.createElement('input');
+        linkInput.type = 'text';
+        linkInput.className = 'task-link';
+        linkInput.placeholder = '備註／雲端連結…';
+        linkInput.value = item.link || '';
+        linkInput.addEventListener('change', function(){
+          item.link = linkInput.value;
+          renderChecklist();
+          postAction({action:'update', sheet:'Checklist', id:item.id, fields:{link: item.link}});
+        });
+        linkWrap.appendChild(linkInput);
+        if(item.link && /^https?:\/\//i.test(item.link.trim())){
+          var linkA = document.createElement('a');
+          linkA.href = item.link.trim();
+          linkA.target = '_blank';
+          linkA.rel = 'noopener';
+          linkA.className = 'task-link-open';
+          linkA.textContent = '🔗 開啟';
+          linkWrap.appendChild(linkA);
+        }
+
         var del = document.createElement('button');
         del.className = 'task-del';
         del.textContent = '刪除';
@@ -430,13 +508,34 @@
           postAction({action:'delete', sheet:'Checklist', id:item.id});
         });
         row.appendChild(checkbox);
-        row.appendChild(text);
+        row.appendChild(categoryInput);
+        row.appendChild(textInput);
+        row.appendChild(linkWrap);
         row.appendChild(del);
+
+        var descInput = document.createElement('input');
+        descInput.type = 'text';
+        descInput.className = 'task-desc';
+        descInput.placeholder = '為什麼要做這件事？可以補充說明給新人看…';
+        descInput.value = item.desc || '';
+        descInput.addEventListener('change', function(){
+          item.desc = descInput.value;
+          postAction({action:'update', sheet:'Checklist', id:item.id, fields:{desc: item.desc}});
+        });
+        var descRow = document.createElement('div');
+        descRow.className = 'task-desc-row' + (status ? ' status-'+status : '');
+        descRow.appendChild(descInput);
+
         block.appendChild(row);
+        block.appendChild(descRow);
       });
 
       var addRow = document.createElement('div');
       addRow.className = 'add-task-row';
+      var addCategoryInput = document.createElement('input');
+      addCategoryInput.type = 'text';
+      addCategoryInput.placeholder = '大類（選填）';
+      addCategoryInput.style.maxWidth = '110px';
       var addInput = document.createElement('input');
       addInput.type = 'text';
       addInput.placeholder = '新增這個階段的項目…';
@@ -446,14 +545,16 @@
         var val = addInput.value.trim();
         if(!val) return;
         var maxOrder = state.Checklist.reduce(function(m,i){ return Math.max(m, i.order); }, 0);
-        var item = {id:newId('c'), phase:group.phase, text:val, done:false, order:maxOrder+1};
+        var item = {id:newId('c'), phase:group.phase, category:addCategoryInput.value.trim(), text:val, done:false, desc:'', link:'', order:maxOrder+1};
         state.Checklist.push(item);
         addInput.value = '';
+        addCategoryInput.value = '';
         renderChecklist();
         updateProgress();
-        postAction({action:'add', sheet:'Checklist', fields:{id:item.id, phase:item.phase, text:item.text, done:'FALSE', order:item.order}});
+        postAction({action:'add', sheet:'Checklist', fields:{id:item.id, phase:item.phase, category:item.category, text:item.text, done:'FALSE', desc:'', link:'', order:item.order}});
       });
       addInput.addEventListener('keydown', function(e){ if(e.key === 'Enter') addBtn.click(); });
+      addRow.appendChild(addCategoryInput);
       addRow.appendChild(addInput);
       addRow.appendChild(addBtn);
       block.appendChild(addRow);
