@@ -188,7 +188,7 @@
   }
 
   .props-checklist{
-    border:1.5px solid var(--gold-soft); background:var(--blush); padding:18px 22px; margin-bottom:22px;
+    border:1.5px solid var(--gold-soft); background:var(--blush); padding:18px 22px; margin-top:26px;
   }
   .props-checklist-head{font-family:'Noto Serif TC', serif; font-weight:700; font-size:1rem; margin-bottom:4px;}
   .props-checklist-sub{font-size:.78rem; color:var(--charcoal-soft); margin-bottom:14px;}
@@ -343,12 +343,6 @@
       <p>台北漢來大飯店・晚宴，以下為草案流程，可直接點擊修改時間、流程、音樂、投影幕、道具與備註，實際時間將依現場狀況於婚禮前確認定案。</p>
     </div>
 
-    <div class="props-checklist" id="propsChecklist">
-      <div class="props-checklist-head">🎁 道具核對清單</div>
-      <p class="props-checklist-sub">自動整理自下方流程表「道具」欄位出現過的所有物品，準備好就打勾，確保每個環節需要的道具都不會漏掉。</p>
-      <div id="propsList"></div>
-    </div>
-
     <div class="itin-table-wrap">
       <table class="itin-table">
         <thead>
@@ -369,6 +363,12 @@
     </div>
     <div class="add-itin-row"><button id="addItinBtn">＋ 新增流程項目</button></div>
     <p class="save-note">＊此流程為草案，建議於婚禮前 2 週與總召進行最終確認會議後定案。</p>
+
+    <div class="props-checklist" id="propsChecklist">
+      <div class="props-checklist-head">🎁 道具核對清單</div>
+      <p class="props-checklist-sub">自動整理自上方流程表「道具」欄位出現過的所有物品，準備好就打勾，確保每個環節需要的道具都不會漏掉。</p>
+      <div id="propsList"></div>
+    </div>
   </section>
 
   <!-- ================= 廠商聯繫清單 ================= -->
@@ -543,7 +543,7 @@
   // 每 20 秒自動同步一次，若使用者正在輸入欄位則跳過，避免打斷輸入
   setInterval(function(){
     var active = document.activeElement;
-    var typing = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA');
+    var typing = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable);
     if(!typing) loadAll(true);
   }, 20000);
 
@@ -925,8 +925,11 @@
   }
 
   function findPropByName(name){
+    // 若試算表裡不小心有同名重複列，只取第一筆當作代表，避免畫面出現重複勾選框
     return state.Props.find(function(p){ return p.name === name; });
   }
+
+  var propsAddRequested = {}; // 記錄這個瀏覽器分頁本次已經送出過新增請求的道具名稱，避免同一名稱被重複新增
 
   function renderPropsChecklist(){
     var names = extractPropsList();
@@ -939,8 +942,10 @@
     checklistBlock.style.display = 'block';
 
     // 道具流程表裡出現、但 Props 分頁還沒有的物品，自動新增一筆並同步回試算表
+    // （同一個名稱一個 session 只會送出一次新增請求，避免因為同步時間差重複新增）
     names.forEach(function(name){
-      if(!findPropByName(name)){
+      if(!findPropByName(name) && !propsAddRequested[name]){
+        propsAddRequested[name] = true;
         var maxOrder = state.Props.reduce(function(m,p){ return Math.max(m, p.order); }, 0);
         var newProp = {id:newId('pr'), name:name, done:false, order:maxOrder+1};
         state.Props.push(newProp);
@@ -951,6 +956,7 @@
     listEl.innerHTML = '';
     names.forEach(function(name){
       var prop = findPropByName(name);
+      if(!prop) return; // 新增請求還在進行中，等下一次重新整理再顯示
       var row = document.createElement('label');
       row.className = 'props-item' + (prop.done ? ' done' : '');
       var cb = document.createElement('input');
