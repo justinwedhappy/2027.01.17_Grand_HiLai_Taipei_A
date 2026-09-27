@@ -347,13 +347,12 @@
       <table class="itin-table">
         <thead>
           <tr>
-            <th style="width:7%;">時間</th>
-            <th style="width:7%;">結束</th>
-            <th style="width:13%;">流程</th>
-            <th style="width:18%;">概要說明</th>
-            <th style="width:14%;">🎵 音樂</th>
-            <th style="width:14%;">🖥 投影幕</th>
-            <th style="width:13%;">🎁 道具</th>
+            <th style="width:8%;">時間</th>
+            <th style="width:14%;">大綱</th>
+            <th style="width:20%;">概要內容</th>
+            <th style="width:16%;">🎵 音樂</th>
+            <th style="width:16%;">🖥 投影幕</th>
+            <th style="width:14%;">🎁 道具</th>
             <th style="width:12%;">備註</th>
             <th style="width:40px;"></th>
           </tr>
@@ -552,8 +551,9 @@
   }
   function normalizeItinRow(r){
     return {
-      id:toStr(r.id), time:toStr(r.time), end_time:toStr(r['結束時間']||r.end_time),
-      process:toStr(r['流程']||r.process), summary:toStr(r['概要說明']||r.summary),
+      id:toStr(r.id), time:toStr(r.time),
+      outline:toStr(r['大綱']!==undefined ? r['大綱'] : r.outline),
+      summary:toStr(r['概要內容']!==undefined ? r['概要內容'] : (r['概要說明']!==undefined ? r['概要說明'] : r.summary)),
       music:toStr(r['音樂']||r.music), screen:toStr(r['投影幕']||r.screen),
       props:toStr(r['道具']||r.props), note:toStr(r.note), order:toNum(r.order)
     };
@@ -837,7 +837,7 @@
 
   // ================= 婚禮流程 =================
   var ITIN_SHEET_COL = {
-    end_time: '結束時間', process: '流程', summary: '概要說明', music: '音樂', screen: '投影幕', props: '道具'
+    outline: '大綱', summary: '概要內容', music: '音樂', screen: '投影幕', props: '道具'
   };
 
   function makeItinCell(row, field, placeholder){
@@ -877,13 +877,10 @@
       var timeTd = makeItinCell(row, 'time', '時間');
       timeTd.firstChild.classList.add('itin-time-cell');
       tr.appendChild(timeTd);
-      var endTd = makeItinCell(row, 'end_time', '結束');
-      endTd.firstChild.classList.add('itin-time-cell');
-      tr.appendChild(endTd);
-      var processTd = makeItinCell(row, 'process', '流程項目…');
-      processTd.firstChild.classList.add('itin-process-cell');
-      tr.appendChild(processTd);
-      tr.appendChild(makeItinCell(row, 'summary', '概要說明…'));
+      var outlineTd = makeItinCell(row, 'outline', '大綱…');
+      outlineTd.firstChild.classList.add('itin-process-cell');
+      tr.appendChild(outlineTd);
+      tr.appendChild(makeItinCell(row, 'summary', '概要內容…'));
       tr.appendChild(makeItinCell(row, 'music', '音樂…'));
       tr.appendChild(makeItinCell(row, 'screen', '投影幕…'));
       tr.appendChild(makeItinCell(row, 'props', '道具…'));
@@ -977,12 +974,12 @@
 
   document.getElementById('addItinBtn').addEventListener('click', function(){
     var maxOrder = state.Itinerary.reduce(function(m,i){ return Math.max(m, i.order); }, 0);
-    var row = {id:newId('i'), time:'', end_time:'', process:'', summary:'', music:'', screen:'', props:'', note:'', order:maxOrder+1};
+    var row = {id:newId('i'), time:'', outline:'', summary:'', music:'', screen:'', props:'', note:'', order:maxOrder+1};
     state.Itinerary.push(row);
     renderItin();
     renderPropsChecklist();
     postAction({action:'add', sheet:'Itinerary', fields:{
-      id:row.id, time:'', '結束時間':'', '流程':'', '概要說明':'', '音樂':'', '投影幕':'', '道具':'', note:'', order:row.order
+      id:row.id, time:'', '大綱':'', '概要內容':'', '音樂':'', '投影幕':'', '道具':'', note:'', order:row.order
     }});
   });
 
