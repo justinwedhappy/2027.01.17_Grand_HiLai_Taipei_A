@@ -124,7 +124,7 @@
   .task-row.status-soon{background:#FBF0D2;}
   .task-row.status-done{background:#EFEFEF;}
   .task-links-row{
-    display:flex; gap:10px; flex-wrap:wrap;
+    display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;
     padding:0 20px 12px 39px;
   }
   .task-links-row.status-overdue{background:#FBE2E2;}
@@ -484,7 +484,15 @@
         return (a.category||'').localeCompare(b.category||'', 'zh-Hant');
       });
     });
-    return order.map(function(phase){ return {phase:phase, items:groups[phase]}; });
+    var phaseList = order.map(function(phase){ return {phase:phase, items:groups[phase]}; });
+    // 整個階段都已完成的話，把這個階段區塊移到最下面（其餘階段維持原本的時間先後順序）
+    phaseList.sort(function(a,b){
+      var aDone = a.items.length > 0 && a.items.every(function(i){ return i.done; });
+      var bDone = b.items.length > 0 && b.items.every(function(i){ return i.done; });
+      if(aDone === bDone) return 0;
+      return aDone ? 1 : -1;
+    });
+    return phaseList;
   }
 
   var linkEditorOpen = {}; // 記錄哪些項目目前正在「編輯連結」模式，重繪畫面時要保留這個狀態
