@@ -547,7 +547,7 @@
   }, 20000);
 
   function normalizeChecklistRow(r){
-    return {id:toStr(r.id), phase:toStr(r.phase), category:toStr(r.category), text:toStr(r.text), done:toBool(r.done), desc:toStr(r.desc), ref_link:toStr(r.ref_link), file_link:toStr(r.file_link), order:toNum(r.order)};
+    return {id:toStr(r.id), phase:toStr(r.phase), category:toStr(r.category), text:toStr(r.text), done:toBool(r.done), desc:toStr(r.desc), link:toStr(r.link), order:toNum(r.order)};
   }
   function normalizeItinRow(r){
     return {
@@ -659,6 +659,7 @@
   }
 
   var linkEditorOpen = {}; // 記錄哪些項目目前正在「編輯連結」模式，重繪畫面時要保留這個狀態
+  var descEditorOpenMap = {}; // 記錄哪些項目目前正在「新增說明」模式
 
   function renderChecklist(){
     var container = document.getElementById('checklistContainer');
@@ -723,21 +724,26 @@
         row.appendChild(textInput);
         row.appendChild(del);
 
-        var descInput = document.createElement('input');
-        descInput.type = 'text';
-        descInput.className = 'task-desc';
-        descInput.placeholder = '為什麼要做這件事？可以補充說明給新人看…';
-        descInput.value = item.desc || '';
-        descInput.addEventListener('change', function(){
-          item.desc = descInput.value;
-          postAction({action:'update', sheet:'Checklist', id:item.id, fields:{desc: item.desc}});
-        });
+        var descEditorOpen = !!descEditorOpenMap[item.id];
         var descRow = document.createElement('div');
         descRow.className = 'task-desc-row' + (status ? ' status-'+status : '');
-        descRow.appendChild(descInput);
+        if(item.desc || descEditorOpen){
+          var descInput = document.createElement('input');
+          descInput.type = 'text';
+          descInput.className = 'task-desc';
+          descInput.placeholder = '為什麼要做這件事？可以補充說明給新人看…';
+          descInput.value = item.desc || '';
+          descInput.addEventListener('blur', function(){
+            item.desc = descInput.value;
+            delete descEditorOpenMap[item.id];
+            postAction({action:'update', sheet:'Checklist', id:item.id, fields:{desc: item.desc}});
+            renderChecklist();
+          });
+          descRow.appendChild(descInput);
+        }
 
-        var makeLinkField = function(label, icon, field){
-          var url = (item[field] || '').trim();
+        var makeLinkField = function(label, icon){
+          var url = (item.link || '').trim();
           if(!/^https?:\/\//i.test(url)) return null; // 沒有連結就不呈現
           var a = document.createElement('a');
           a.href = url;
@@ -747,24 +753,16 @@
           a.textContent = icon + ' ' + label;
           return a;
         }
-        var makeLinkEditInput = function(label, field, placeholder){
-          var wrap = document.createElement('div');
-          wrap.className = 'task-link-edit-field';
-          var lbl = document.createElement('label');
-          lbl.textContent = label;
+        var makeLinkEditInput = function(placeholder){
           var input = document.createElement('input');
           input.type = 'text';
           input.placeholder = placeholder;
-          input.value = item[field] || '';
+          input.value = item.link || '';
           input.addEventListener('change', function(){
-            item[field] = input.value;
-            var fields = {};
-            fields[field] = item[field];
-            postAction({action:'update', sheet:'Checklist', id:item.id, fields:fields});
+            item.link = input.value;
+            postAction({action:'update', sheet:'Checklist', id:item.id, fields:{link: item.link}});
           });
-          wrap.appendChild(lbl);
-          wrap.appendChild(input);
-          return wrap;
+          return input;
         }
 
         var linksRow = document.createElement('div');
@@ -772,8 +770,7 @@
         var isEditing = !!linkEditorOpen[item.id];
 
         if(isEditing){
-          linksRow.appendChild(makeLinkEditInput('參考資料', 'ref_link', '參考網站／靈感連結…'));
-          linksRow.appendChild(makeLinkEditInput('上傳檔案', 'file_link', '雲端硬碟上傳檔案連結…'));
+          linksRow.appendChild(makeLinkEditInput('參考網站／雲端連結…'));
           var doneEditBtn = document.createElement('button');
           doneEditBtn.className = 'task-link-edit-toggle';
           doneEditBtn.textContent = '完成';
@@ -783,10 +780,8 @@
           });
           linksRow.appendChild(doneEditBtn);
         }else{
-          var refLinkEl = makeLinkField('參考資料', '🔗', 'ref_link');
-          var fileLinkEl = makeLinkField('上傳檔案', '📁', 'file_link');
-          if(refLinkEl) linksRow.appendChild(refLinkEl);
-          if(fileLinkEl) linksRow.appendChild(fileLinkEl);
+          var linkEl = makeLinkField('相關連結', '🔗');
+          if(linkEl) linksRow.appendChild(linkEl);
           var editBtn = document.createElement('button');
           editBtn.className = 'task-link-edit-toggle';
           editBtn.textContent = '✎ 編輯連結';
@@ -797,8 +792,19 @@
           linksRow.appendChild(editBtn);
         }
 
+        if(!item.desc && !descEditorOpen){
+          var addDescBtn = document.createElement('button');
+          addDescBtn.className = 'task-link-edit-toggle';
+          addDescBtn.textContent = '✎ 新增說明';
+          addDescBtn.addEventListener('click', function(){
+            descEditorOpenMap[item.id] = true;
+            renderChecklist();
+          });
+          linksRow.appendChild(addDescBtn);
+        }
+
         block.appendChild(row);
-        block.appendChild(descRow);
+        if(descRow.childNodes.length) block.appendChild(descRow);
         block.appendChild(linksRow);
       });
 
@@ -817,13 +823,13 @@
         var val = addInput.value.trim();
         if(!val) return;
         var maxOrder = state.Checklist.reduce(function(m,i){ return Math.max(m, i.order); }, 0);
-        var item = {id:newId('c'), phase:group.phase, category:addCategoryInput.value.trim(), text:val, done:false, desc:'', ref_link:'', file_link:'', order:maxOrder+1};
+        var item = {id:newId('c'), phase:group.phase, category:addCategoryInput.value.trim(), text:val, done:false, desc:'', link:'', order:maxOrder+1};
         state.Checklist.push(item);
         addInput.value = '';
         addCategoryInput.value = '';
         renderChecklist();
         updateProgress();
-        postAction({action:'add', sheet:'Checklist', fields:{id:item.id, phase:item.phase, category:item.category, text:item.text, done:'FALSE', desc:'', ref_link:'', file_link:'', order:item.order}});
+        postAction({action:'add', sheet:'Checklist', fields:{id:item.id, phase:item.phase, category:item.category, text:item.text, done:'FALSE', desc:'', link:'', order:item.order}});
       });
       addInput.addEventListener('keydown', function(e){ if(e.key === 'Enter') addBtn.click(); });
       addRow.appendChild(addCategoryInput);
