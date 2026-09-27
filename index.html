@@ -162,35 +162,30 @@
   .add-task-row button{padding:8px 16px; background:var(--wine); color:var(--white); border:none; border-radius:2px; font-size:.82rem;}
 
   /* ---------- itinerary ---------- */
-  .itin-list{border:1.5px solid var(--line); background:var(--white);}
-  .itin-row{padding:14px 20px; border-top:1px solid var(--ivory-deep);}
-  .itin-row:first-child{border-top:none;}
-  .itin-main-line{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
-  .itin-time-input{
-    width:66px; flex:none; border:1px solid var(--line); background:var(--ivory); border-radius:2px;
-    font-family:'Cormorant Garamond', serif; font-size:1.1rem; font-weight:700; color:var(--wine);
-    padding:5px 6px; text-align:center;
+  .itin-table-wrap{border:1.5px solid var(--line); background:var(--white); overflow-x:auto;}
+  table.itin-table{width:100%; border-collapse:collapse; table-layout:fixed;}
+  table.itin-table th{
+    text-align:left; font-size:.76rem; color:var(--charcoal-soft); font-weight:600;
+    padding:12px 10px; background:var(--blush); border-bottom:1px solid var(--line);
   }
-  .itin-arrow{color:var(--charcoal-soft); flex:none; font-size:.85rem;}
-  .itin-process-input{
-    flex:1; min-width:140px; border:none; background:none; font-family:inherit; font-weight:700;
-    font-size:.98rem; padding:4px 2px; color:var(--charcoal);
+  table.itin-table td{padding:6px 8px; border-top:1px solid var(--ivory-deep); vertical-align:top;}
+  .itin-cell{
+    width:100%; min-height:1.6em; padding:6px; color:var(--charcoal); font-size:.85rem;
+    border-radius:2px; white-space:pre-wrap; word-break:break-word; outline:none;
   }
-  .itin-summary-input{
-    width:100%; border:none; background:none; font-family:inherit; font-size:.85rem; font-style:italic;
-    padding:4px 2px; color:var(--charcoal-soft); margin-top:2px;
+  .itin-cell:focus{background:var(--ivory);}
+  .itin-cell.empty::before{content:attr(data-placeholder); color:var(--charcoal-soft); opacity:.6;}
+  .itin-time-cell{
+    font-family:'Cormorant Garamond', serif; font-weight:700; font-size:1.05rem; color:var(--wine);
+    text-align:center;
   }
-  .itin-meta-line{display:flex; flex-wrap:wrap; gap:6px 16px; margin-top:8px;}
-  .itin-meta-field{display:flex; align-items:center; gap:5px; flex:1 1 150px; min-width:120px;}
-  .itin-meta-icon{flex:none; font-size:.82rem; opacity:.75;}
-  .itin-meta-input{
-    flex:1; border:none; border-bottom:1px dashed var(--line); background:none; font-family:inherit;
-    font-size:.78rem; padding:3px 2px; color:var(--charcoal-soft);
-  }
-  .itin-meta-input:focus{border-bottom-color:var(--wine); background:var(--ivory);}
+  .itin-process-cell{font-weight:700;}
   .itin-del{background:none; border:none; color:var(--charcoal-soft); font-size:.78rem; text-decoration:underline; flex:none;}
   .add-itin-row{padding:14px 20px; border-top:1px dashed var(--line);}
   .add-itin-row button{padding:9px 18px; background:var(--wine); color:var(--white); border:none; border-radius:2px; font-size:.85rem;}
+  @media (max-width:900px){
+    .itin-table-wrap table{min-width:1000px;}
+  }
 
   .props-checklist{
     border:1.5px solid var(--gold-soft); background:var(--blush); padding:18px 22px; margin-bottom:22px;
@@ -354,7 +349,24 @@
       <div id="propsList"></div>
     </div>
 
-    <div class="itin-list" id="itinContainer"></div>
+    <div class="itin-table-wrap">
+      <table class="itin-table">
+        <thead>
+          <tr>
+            <th style="width:7%;">時間</th>
+            <th style="width:7%;">結束</th>
+            <th style="width:13%;">流程</th>
+            <th style="width:18%;">概要說明</th>
+            <th style="width:14%;">🎵 音樂</th>
+            <th style="width:14%;">🖥 投影幕</th>
+            <th style="width:13%;">🎁 道具</th>
+            <th style="width:12%;">備註</th>
+            <th style="width:40px;"></th>
+          </tr>
+        </thead>
+        <tbody id="itinContainer"></tbody>
+      </table>
+    </div>
     <div class="add-itin-row"><button id="addItinBtn">＋ 新增流程項目</button></div>
     <p class="save-note">＊此流程為草案，建議於婚禮前 2 週與總召進行最終確認會議後定案。</p>
   </section>
@@ -460,7 +472,7 @@
   var syncBarEl = document.querySelector('.sync-bar');
   var refreshBtn = document.getElementById('refreshBtn');
 
-  var state = { Checklist: [], Itinerary: [], Vendors: [], Payments: [] };
+  var state = { Checklist: [], Itinerary: [], Vendors: [], Payments: [], Props: [] };
   var isConfigured = APPS_SCRIPT_URL && APPS_SCRIPT_URL.indexOf('PASTE_YOUR') !== 0;
 
   function setSyncStatus(text, isError){
@@ -496,6 +508,7 @@
       state.Itinerary = (data.Itinerary || []).map(normalizeItinRow);
       state.Vendors = (data.Vendors || []).map(normalizeVendorRow);
       state.Payments = (data.Payments || []).map(normalizePaymentRow);
+      state.Props = (data.Props || []).map(normalizePropRow);
       renderChecklist();
       renderItin();
       renderPropsChecklist();
@@ -826,40 +839,57 @@
   var ITIN_SHEET_COL = {
     end_time: '結束時間', process: '流程', summary: '概要說明', music: '音樂', screen: '投影幕', props: '道具'
   };
-  function makeItinField(row, field, placeholder, cssClass){
-    var input = document.createElement('input');
-    input.type = 'text';
-    if(cssClass) input.className = cssClass;
-    input.placeholder = placeholder;
-    input.value = row[field] || '';
-    input.addEventListener('change', function(){
-      row[field] = input.value;
+
+  function makeItinCell(row, field, placeholder){
+    var td = document.createElement('td');
+    var cell = document.createElement('div');
+    cell.className = 'itin-cell';
+    cell.contentEditable = 'true';
+    cell.textContent = row[field] || '';
+    if(!row[field] && placeholder){
+      cell.classList.add('empty');
+      cell.dataset.placeholder = placeholder;
+    }
+    cell.addEventListener('focus', function(){ cell.classList.remove('empty'); });
+    cell.addEventListener('blur', function(){
+      var val = cell.textContent.trim();
+      row[field] = val;
+      if(!val && placeholder) cell.classList.add('empty');
       var sheetField = ITIN_SHEET_COL[field] || field;
       var fields = {};
-      fields[sheetField] = row[field];
+      fields[sheetField] = val;
       postAction({action:'update', sheet:'Itinerary', id:row.id, fields:fields});
-      renderPropsChecklist();
+      if(field === 'props') renderPropsChecklist();
     });
-    return input;
+    cell.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' && field !== 'summary'){ e.preventDefault(); cell.blur(); }
+    });
+    td.appendChild(cell);
+    return td;
   }
 
   function renderItin(){
-    var container = document.getElementById('itinContainer');
-    container.innerHTML = '';
+    var tbody = document.getElementById('itinContainer');
+    tbody.innerHTML = '';
     var rows = state.Itinerary.slice().sort(function(a,b){ return a.order - b.order; });
     rows.forEach(function(row){
-      var el = document.createElement('div');
-      el.className = 'itin-row';
+      var tr = document.createElement('tr');
+      var timeTd = makeItinCell(row, 'time', '時間');
+      timeTd.firstChild.classList.add('itin-time-cell');
+      tr.appendChild(timeTd);
+      var endTd = makeItinCell(row, 'end_time', '結束');
+      endTd.firstChild.classList.add('itin-time-cell');
+      tr.appendChild(endTd);
+      var processTd = makeItinCell(row, 'process', '流程項目…');
+      processTd.firstChild.classList.add('itin-process-cell');
+      tr.appendChild(processTd);
+      tr.appendChild(makeItinCell(row, 'summary', '概要說明…'));
+      tr.appendChild(makeItinCell(row, 'music', '音樂…'));
+      tr.appendChild(makeItinCell(row, 'screen', '投影幕…'));
+      tr.appendChild(makeItinCell(row, 'props', '道具…'));
+      tr.appendChild(makeItinCell(row, 'note', '備註…'));
 
-      var mainLine = document.createElement('div');
-      mainLine.className = 'itin-main-line';
-      mainLine.appendChild(makeItinField(row, 'time', '時間', 'itin-time-input'));
-      var arrow = document.createElement('span');
-      arrow.className = 'itin-arrow';
-      arrow.textContent = '→';
-      mainLine.appendChild(arrow);
-      mainLine.appendChild(makeItinField(row, 'end_time', '結束', 'itin-time-input'));
-      mainLine.appendChild(makeItinField(row, 'process', '流程項目…', 'itin-process-input'));
+      var delTd = document.createElement('td');
       var del = document.createElement('button');
       del.className = 'itin-del';
       del.textContent = '刪除';
@@ -869,40 +899,16 @@
         renderPropsChecklist();
         postAction({action:'delete', sheet:'Itinerary', id:row.id});
       });
-      mainLine.appendChild(del);
-      el.appendChild(mainLine);
+      delTd.appendChild(del);
+      tr.appendChild(delTd);
 
-      var summaryInput = makeItinField(row, 'summary', '概要說明…', 'itin-summary-input');
-      el.appendChild(summaryInput);
-
-      var metaLine = document.createElement('div');
-      metaLine.className = 'itin-meta-line';
-      var metaFields = [
-        ['music', '🎵', '音樂'], ['screen', '🖥', '投影幕'], ['props', '🎁', '道具'], ['note', '📝', '備註']
-      ];
-      metaFields.forEach(function(mf){
-        var wrap = document.createElement('div');
-        wrap.className = 'itin-meta-field';
-        var icon = document.createElement('span');
-        icon.className = 'itin-meta-icon';
-        icon.textContent = mf[1];
-        wrap.appendChild(icon);
-        wrap.appendChild(makeItinField(row, mf[0], mf[2]+'…', 'itin-meta-input'));
-        metaLine.appendChild(wrap);
-      });
-      el.appendChild(metaLine);
-
-      container.appendChild(el);
+      tbody.appendChild(tr);
     });
   }
 
-  // ---------- 道具核對清單 ----------
-  var PROPS_KEY = 'wedding-0117-props-checked'; // 本機備援：若尚未設定 Props 分頁同步，先用瀏覽器記住勾選狀態
-  function loadLocalPropsChecked(){
-    try{ return JSON.parse(localStorage.getItem(PROPS_KEY) || '{}'); }catch(e){ return {}; }
-  }
-  function saveLocalPropsChecked(obj){
-    try{ localStorage.setItem(PROPS_KEY, JSON.stringify(obj)); }catch(e){}
+  // ---------- 道具核對清單（同步到 Props 分頁） ----------
+  function normalizePropRow(r){
+    return {id:toStr(r.id), name:toStr(r.name), done:toBool(r.done), order:toNum(r.order)};
   }
 
   function extractPropsList(){
@@ -918,6 +924,10 @@
     return names;
   }
 
+  function findPropByName(name){
+    return state.Props.find(function(p){ return p.name === name; });
+  }
+
   function renderPropsChecklist(){
     var names = extractPropsList();
     var listEl = document.getElementById('propsList');
@@ -927,19 +937,29 @@
       return;
     }
     checklistBlock.style.display = 'block';
-    var checked = loadLocalPropsChecked();
+
+    // 道具流程表裡出現、但 Props 分頁還沒有的物品，自動新增一筆並同步回試算表
+    names.forEach(function(name){
+      if(!findPropByName(name)){
+        var maxOrder = state.Props.reduce(function(m,p){ return Math.max(m, p.order); }, 0);
+        var newProp = {id:newId('pr'), name:name, done:false, order:maxOrder+1};
+        state.Props.push(newProp);
+        postAction({action:'add', sheet:'Props', fields:{id:newProp.id, name:newProp.name, done:'FALSE', order:newProp.order}});
+      }
+    });
+
     listEl.innerHTML = '';
     names.forEach(function(name){
+      var prop = findPropByName(name);
       var row = document.createElement('label');
-      row.className = 'props-item' + (checked[name] ? ' done' : '');
+      row.className = 'props-item' + (prop.done ? ' done' : '');
       var cb = document.createElement('input');
       cb.type = 'checkbox';
-      cb.checked = !!checked[name];
+      cb.checked = prop.done;
       cb.addEventListener('change', function(){
-        var state2 = loadLocalPropsChecked();
-        state2[name] = cb.checked;
-        saveLocalPropsChecked(state2);
+        prop.done = cb.checked;
         row.classList.toggle('done', cb.checked);
+        postAction({action:'update', sheet:'Props', id:prop.id, fields:{done: prop.done ? 'TRUE' : 'FALSE'}});
       });
       var span = document.createElement('span');
       span.textContent = name;
