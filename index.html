@@ -394,7 +394,7 @@
 
 </main>
 
-<footer>Just.in Wedding 佳時婚禮顧問工作室・專屬籌備手冊<br>婚禮顧問：佳時婚禮顧問工作室</footer>
+<footer>Just.in Wedding 佳時婚禮顧問工作室</footer>
 
 <script>
 (function(){
@@ -437,6 +437,12 @@
   function toNum(v){
     var n = parseFloat(v);
     return isNaN(n) ? 0 : n;
+  }
+  // Google 試算表某些欄位可能被存成數字、布林值或日期物件，而不是純文字
+  // （例如有人不小心在連結欄位打了電話號碼）。統一轉成安全的字串，避免 .trim() 等字串方法出錯而讓整個同步中斷。
+  function toStr(v){
+    if(v === undefined || v === null) return '';
+    return String(v);
   }
 
   async function loadAll(silent){
@@ -491,19 +497,19 @@
   }, 20000);
 
   function normalizeChecklistRow(r){
-    return {id:String(r.id), phase:r.phase||'', category:r.category||'', text:r.text||'', done:toBool(r.done), desc:r.desc||'', ref_link:r.ref_link||'', file_link:r.file_link||'', order:toNum(r.order)};
+    return {id:toStr(r.id), phase:toStr(r.phase), category:toStr(r.category), text:toStr(r.text), done:toBool(r.done), desc:toStr(r.desc), ref_link:toStr(r.ref_link), file_link:toStr(r.file_link), order:toNum(r.order)};
   }
   function normalizeItinRow(r){
-    return {id:String(r.id), time:r.time||'', content:r.content||'', note:r.note||'', order:toNum(r.order)};
+    return {id:toStr(r.id), time:toStr(r.time), content:toStr(r.content), note:toStr(r.note), order:toNum(r.order)};
   }
   function normalizeVendorRow(r){
     return {
-      id:String(r.id), category:r.category||'', name:r.name||'', contact:r.contact||'',
-      phone:r.phone||'', arrival:r.arrival||'', note:r.note||'',
-      staff_count:r['工作人員人數']!==undefined ? r['工作人員人數'] : '',
-      meat_count:r['葷食']!==undefined ? r['葷食'] : '',
-      veg_count:r['素食']!==undefined ? r['素食'] : '',
-      dietary_restriction:r['飲食禁忌']||'',
+      id:toStr(r.id), category:toStr(r.category), name:toStr(r.name), contact:toStr(r.contact),
+      phone:toStr(r.phone), arrival:toStr(r.arrival), note:toStr(r.note),
+      staff_count:toStr(r['工作人員人數']),
+      meat_count:toStr(r['葷食']),
+      veg_count:toStr(r['素食']),
+      dietary_restriction:toStr(r['飲食禁忌']),
       order:toNum(r.order)};
   }
 
@@ -786,6 +792,7 @@
       timeWrap.className = 'itin-time';
       var timeInput = document.createElement('input');
       timeInput.type = 'text';
+      timeInput.placeholder = '時間';
       timeInput.value = row.time;
       timeInput.addEventListener('change', function(){
         row.time = timeInput.value;
@@ -797,6 +804,7 @@
       var contentInput = document.createElement('input');
       contentInput.type = 'text';
       contentInput.className = 'itin-content';
+      contentInput.placeholder = '流程內容…';
       contentInput.value = row.content;
       contentInput.addEventListener('change', function(){
         row.content = contentInput.value;
@@ -921,10 +929,10 @@
 
   function normalizePaymentRow(r){
     return {
-      id:String(r.id), name:r.name||'', role:r.role||'', amount:r.amount||'',
-      pay_method:r.pay_method||'', pay_label:r.pay_label||'',
-      when:r.when||'', when_label:r.when_label||'',
-      contact:r.contact||'', note:r.note||'',
+      id:toStr(r.id), name:toStr(r.name), role:toStr(r.role), amount:toStr(r.amount),
+      pay_method:toStr(r.pay_method), pay_label:toStr(r.pay_label),
+      when:toStr(r.when), when_label:toStr(r.when_label),
+      contact:toStr(r.contact), note:toStr(r.note),
       flag: toBool(r.flag), confirmed: toBool(r.confirmed), order:toNum(r.order)
     };
   }
