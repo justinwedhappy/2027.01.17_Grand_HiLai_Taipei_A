@@ -551,7 +551,7 @@
   }
   function normalizeItinRow(r){
     return {
-      id:toStr(r.id), time:toStr(r.time),
+      id:toStr(r.id), time:toStr(r['時間']!==undefined ? r['時間'] : r.time),
       outline:toStr(r['大綱']!==undefined ? r['大綱'] : r.outline),
       summary:toStr(r['概要內容']!==undefined ? r['概要內容'] : (r['概要說明']!==undefined ? r['概要說明'] : r.summary)),
       music:toStr(r['音樂']||r.music), screen:toStr(r['投影幕']||r.screen),
@@ -837,7 +837,7 @@
 
   // ================= 婚禮流程 =================
   var ITIN_SHEET_COL = {
-    outline: '大綱', summary: '概要內容', music: '音樂', screen: '投影幕', props: '道具'
+    time: '時間', outline: '大綱', summary: '概要內容', music: '音樂', screen: '投影幕', props: '道具'
   };
 
   function makeItinCell(row, field, placeholder){
@@ -979,7 +979,7 @@
     renderItin();
     renderPropsChecklist();
     postAction({action:'add', sheet:'Itinerary', fields:{
-      id:row.id, time:'', '大綱':'', '概要內容':'', '音樂':'', '投影幕':'', '道具':'', note:'', order:row.order
+      id:row.id, '時間':'', '大綱':'', '概要內容':'', '音樂':'', '投影幕':'', '道具':'', note:'', order:row.order
     }});
   });
 
