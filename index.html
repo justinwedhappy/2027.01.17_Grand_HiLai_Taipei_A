@@ -123,21 +123,27 @@
   .task-row.status-overdue{background:#FBE2E2;}
   .task-row.status-soon{background:#FBF0D2;}
   .task-row.status-done{background:#EFEFEF;}
-  .task-link-wrap{flex:0 0 160px; display:flex; align-items:center; gap:6px;}
-  .task-link{
-    flex:1; font-size:.78rem; padding:5px 8px; border:1px solid var(--line); border-radius:2px;
-    background:var(--white); color:var(--charcoal-soft);
+  .task-links-row{
+    display:grid; grid-template-columns:1fr 1fr; gap:10px 16px;
+    padding:2px 20px 12px 39px;
   }
-  .task-link-open{font-size:.76rem; color:var(--wine); white-space:nowrap; text-decoration:underline;}
-  .task-link-open-row{padding:2px 20px 12px 39px;}
-  .task-link-open-row.status-overdue{background:#FBE2E2;}
-  .task-link-open-row.status-soon{background:#FBF0D2;}
-  .task-link-open-row.status-done{background:#EFEFEF;}
-  .task-link-open-row a.task-link-open{
-    display:inline-block; font-size:.85rem; font-weight:600; color:var(--white); background:var(--wine);
-    padding:7px 16px; border-radius:20px; text-decoration:none;
+  .task-links-row.status-overdue{background:#FBE2E2;}
+  .task-links-row.status-soon{background:#FBF0D2;}
+  .task-links-row.status-done{background:#EFEFEF;}
+  .task-link-field{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+  .task-link-field label{font-size:.72rem; color:var(--charcoal-soft); flex:none; width:52px;}
+  .task-link-field input{
+    flex:1; min-width:100px; font-size:.78rem; padding:5px 8px; border:1px solid var(--line);
+    border-radius:2px; background:var(--white); color:var(--charcoal-soft);
   }
-  .task-link-open-row a.task-link-open:hover{background:var(--wine-deep);}
+  .task-link-field a.task-link-open{
+    flex:none; font-size:.76rem; font-weight:600; color:var(--white); background:var(--wine);
+    padding:4px 12px; border-radius:16px; text-decoration:none; white-space:nowrap;
+  }
+  .task-link-field a.task-link-open:hover{background:var(--wine-deep);}
+  @media (max-width:640px){
+    .task-links-row{grid-template-columns:1fr;}
+  }
   .task-del{background:none; border:none; color:var(--charcoal-soft); font-size:.78rem; text-decoration:underline; flex:none;}
   .task-desc-row{padding:0 20px 10px 39px;}
   .task-desc-row.status-overdue{background:#FBE2E2;}
@@ -377,7 +383,7 @@
   }, 20000);
 
   function normalizeChecklistRow(r){
-    return {id:String(r.id), phase:r.phase||'', category:r.category||'', text:r.text||'', done:toBool(r.done), desc:r.desc||'', link:r.link||'', order:toNum(r.order)};
+    return {id:String(r.id), phase:r.phase||'', category:r.category||'', text:r.text||'', done:toBool(r.done), desc:r.desc||'', ref_link:r.ref_link||'', file_link:r.file_link||'', order:toNum(r.order)};
   }
   function normalizeItinRow(r){
     return {id:String(r.id), time:r.time||'', content:r.content||'', note:r.note||'', order:toNum(r.order)};
@@ -512,20 +518,6 @@
           postAction({action:'update', sheet:'Checklist', id:item.id, fields:{text: item.text}});
         });
 
-        var linkWrap = document.createElement('div');
-        linkWrap.className = 'task-link-wrap';
-        var linkInput = document.createElement('input');
-        linkInput.type = 'text';
-        linkInput.className = 'task-link';
-        linkInput.placeholder = '備註／雲端連結…';
-        linkInput.value = item.link || '';
-        linkInput.addEventListener('change', function(){
-          item.link = linkInput.value;
-          renderChecklist();
-          postAction({action:'update', sheet:'Checklist', id:item.id, fields:{link: item.link}});
-        });
-        linkWrap.appendChild(linkInput);
-
         var del = document.createElement('button');
         del.className = 'task-del';
         del.textContent = '刪除';
@@ -538,7 +530,6 @@
         row.appendChild(checkbox);
         row.appendChild(categoryInput);
         row.appendChild(textInput);
-        row.appendChild(linkWrap);
         row.appendChild(del);
 
         var descInput = document.createElement('input');
@@ -554,21 +545,43 @@
         descRow.className = 'task-desc-row' + (status ? ' status-'+status : '');
         descRow.appendChild(descInput);
 
+        var makeLinkField = function(label, field, placeholder){
+          var wrap = document.createElement('div');
+          wrap.className = 'task-link-field';
+          var lbl = document.createElement('label');
+          lbl.textContent = label;
+          var input = document.createElement('input');
+          input.type = 'text';
+          input.placeholder = placeholder;
+          input.value = item[field] || '';
+          input.addEventListener('change', function(){
+            item[field] = input.value;
+            renderChecklist();
+            var fields = {};
+            fields[field] = item[field];
+            postAction({action:'update', sheet:'Checklist', id:item.id, fields:fields});
+          });
+          wrap.appendChild(lbl);
+          wrap.appendChild(input);
+          if(item[field] && /^https?:\/\//i.test(item[field].trim())){
+            var a = document.createElement('a');
+            a.href = item[field].trim();
+            a.target = '_blank';
+            a.rel = 'noopener';
+            a.className = 'task-link-open';
+            a.textContent = '🔗 開啟';
+            wrap.appendChild(a);
+          }
+          return wrap;
+        }
+        var linksRow = document.createElement('div');
+        linksRow.className = 'task-links-row' + (status ? ' status-'+status : '');
+        linksRow.appendChild(makeLinkField('參考資料', 'ref_link', '參考網站／靈感連結…'));
+        linksRow.appendChild(makeLinkField('上傳檔案', 'file_link', '雲端硬碟上傳檔案連結…'));
+
         block.appendChild(row);
         block.appendChild(descRow);
-
-        if(item.link && /^https?:\/\//i.test(item.link.trim())){
-          var linkOpenRow = document.createElement('div');
-          linkOpenRow.className = 'task-link-open-row' + (status ? ' status-'+status : '');
-          var linkA = document.createElement('a');
-          linkA.href = item.link.trim();
-          linkA.target = '_blank';
-          linkA.rel = 'noopener';
-          linkA.className = 'task-link-open';
-          linkA.textContent = '🔗 開啟連結／雲端資料 →';
-          linkOpenRow.appendChild(linkA);
-          block.appendChild(linkOpenRow);
-        }
+        block.appendChild(linksRow);
       });
 
       var addRow = document.createElement('div');
@@ -586,13 +599,13 @@
         var val = addInput.value.trim();
         if(!val) return;
         var maxOrder = state.Checklist.reduce(function(m,i){ return Math.max(m, i.order); }, 0);
-        var item = {id:newId('c'), phase:group.phase, category:addCategoryInput.value.trim(), text:val, done:false, desc:'', link:'', order:maxOrder+1};
+        var item = {id:newId('c'), phase:group.phase, category:addCategoryInput.value.trim(), text:val, done:false, desc:'', ref_link:'', file_link:'', order:maxOrder+1};
         state.Checklist.push(item);
         addInput.value = '';
         addCategoryInput.value = '';
         renderChecklist();
         updateProgress();
-        postAction({action:'add', sheet:'Checklist', fields:{id:item.id, phase:item.phase, category:item.category, text:item.text, done:'FALSE', desc:'', link:'', order:item.order}});
+        postAction({action:'add', sheet:'Checklist', fields:{id:item.id, phase:item.phase, category:item.category, text:item.text, done:'FALSE', desc:'', ref_link:'', file_link:'', order:item.order}});
       });
       addInput.addEventListener('keydown', function(e){ if(e.key === 'Enter') addBtn.click(); });
       addRow.appendChild(addCategoryInput);
