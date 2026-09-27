@@ -555,7 +555,8 @@
       outline:toStr(r['大綱']!==undefined ? r['大綱'] : r.outline),
       summary:toStr(r['概要內容']!==undefined ? r['概要內容'] : (r['概要說明']!==undefined ? r['概要說明'] : r.summary)),
       music:toStr(r['音樂']||r.music), screen:toStr(r['投影幕']||r.screen),
-      props:toStr(r['道具']||r.props), note:toStr(r.note), order:toNum(r.order)
+      props:toStr(r['道具']||r.props),
+      note:toStr(r['備註']!==undefined ? r['備註'] : r.note), order:toNum(r.order)
     };
   }
   function normalizeVendorRow(r){
@@ -843,7 +844,7 @@
 
   // ================= 婚禮流程 =================
   var ITIN_SHEET_COL = {
-    time: '時間', outline: '大綱', summary: '概要內容', music: '音樂', screen: '投影幕', props: '道具'
+    time: '時間', outline: '大綱', summary: '概要內容', music: '音樂', screen: '投影幕', props: '道具', note: '備註'
   };
 
   function makeItinCell(row, field, placeholder){
@@ -985,7 +986,7 @@
     renderItin();
     renderPropsChecklist();
     postAction({action:'add', sheet:'Itinerary', fields:{
-      id:row.id, '時間':'', '大綱':'', '概要內容':'', '音樂':'', '投影幕':'', '道具':'', note:'', order:row.order
+      id:row.id, '時間':'', '大綱':'', '概要內容':'', '音樂':'', '投影幕':'', '道具':'', '備註':'', order:row.order
     }});
   });
 
