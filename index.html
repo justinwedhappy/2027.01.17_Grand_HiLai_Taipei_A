@@ -124,25 +124,28 @@
   .task-row.status-soon{background:#FBF0D2;}
   .task-row.status-done{background:#EFEFEF;}
   .task-links-row{
-    display:grid; grid-template-columns:1fr 1fr; gap:10px 16px;
-    padding:2px 20px 12px 39px;
+    display:flex; gap:10px; flex-wrap:wrap;
+    padding:0 20px 12px 39px;
   }
   .task-links-row.status-overdue{background:#FBE2E2;}
   .task-links-row.status-soon{background:#FBF0D2;}
   .task-links-row.status-done{background:#EFEFEF;}
-  .task-link-field{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
-  .task-link-field label{font-size:.72rem; color:var(--charcoal-soft); flex:none; width:52px;}
-  .task-link-field input{
-    flex:1; min-width:100px; font-size:.78rem; padding:5px 8px; border:1px solid var(--line);
+  .task-links-row a.task-link-open{
+    font-size:.78rem; font-weight:600; color:var(--white); background:var(--wine);
+    padding:5px 14px; border-radius:16px; text-decoration:none; white-space:nowrap;
+  }
+  .task-links-row a.task-link-open:hover{background:var(--wine-deep);}
+  .task-links-row{align-items:center;}
+  .task-link-edit-toggle{
+    font-size:.74rem; color:var(--charcoal-soft); background:none; border:1px dashed var(--line);
+    padding:4px 12px; border-radius:16px;
+  }
+  .task-link-edit-toggle:hover{border-color:var(--wine); color:var(--wine);}
+  .task-link-edit-field{display:flex; align-items:center; gap:8px; flex:1 1 220px; min-width:180px;}
+  .task-link-edit-field label{font-size:.72rem; color:var(--charcoal-soft); flex:none; width:52px;}
+  .task-link-edit-field input{
+    flex:1; font-size:.78rem; padding:5px 8px; border:1px solid var(--line);
     border-radius:2px; background:var(--white); color:var(--charcoal-soft);
-  }
-  .task-link-field a.task-link-open{
-    flex:none; font-size:.76rem; font-weight:600; color:var(--white); background:var(--wine);
-    padding:4px 12px; border-radius:16px; text-decoration:none; white-space:nowrap;
-  }
-  .task-link-field a.task-link-open:hover{background:var(--wine-deep);}
-  @media (max-width:640px){
-    .task-links-row{grid-template-columns:1fr;}
   }
   .task-del{background:none; border:none; color:var(--charcoal-soft); font-size:.78rem; text-decoration:underline; flex:none;}
   .task-desc-row{padding:0 20px 10px 39px;}
@@ -462,12 +465,18 @@
       if(!groups[it.phase]){ groups[it.phase] = []; order.push(it.phase); }
       groups[it.phase].push(it);
     });
-    // 每個階段內，未完成的排前面，已完成的移到最後，方便先確認還有哪些待辦
+    // 每個階段內：先未完成／已完成分組（未完成在前），再依「大類」排序
     order.forEach(function(phase){
-      groups[phase].sort(function(a,b){ return (a.done?1:0) - (b.done?1:0); });
+      groups[phase].sort(function(a,b){
+        var doneDiff = (a.done?1:0) - (b.done?1:0);
+        if(doneDiff !== 0) return doneDiff;
+        return (a.category||'').localeCompare(b.category||'', 'zh-Hant');
+      });
     });
     return order.map(function(phase){ return {phase:phase, items:groups[phase]}; });
   }
+
+  var linkEditorOpen = {}; // 記錄哪些項目目前正在「編輯連結」模式，重繪畫面時要保留這個狀態
 
   function renderChecklist(){
     var container = document.getElementById('checklistContainer');
@@ -545,9 +554,20 @@
         descRow.className = 'task-desc-row' + (status ? ' status-'+status : '');
         descRow.appendChild(descInput);
 
-        var makeLinkField = function(label, field, placeholder){
+        var makeLinkField = function(label, icon, field){
+          var url = (item[field] || '').trim();
+          if(!/^https?:\/\//i.test(url)) return null; // 沒有連結就不呈現
+          var a = document.createElement('a');
+          a.href = url;
+          a.target = '_blank';
+          a.rel = 'noopener';
+          a.className = 'task-link-open';
+          a.textContent = icon + ' ' + label;
+          return a;
+        }
+        var makeLinkEditInput = function(label, field, placeholder){
           var wrap = document.createElement('div');
-          wrap.className = 'task-link-field';
+          wrap.className = 'task-link-edit-field';
           var lbl = document.createElement('label');
           lbl.textContent = label;
           var input = document.createElement('input');
@@ -556,28 +576,44 @@
           input.value = item[field] || '';
           input.addEventListener('change', function(){
             item[field] = input.value;
-            renderChecklist();
             var fields = {};
             fields[field] = item[field];
             postAction({action:'update', sheet:'Checklist', id:item.id, fields:fields});
           });
           wrap.appendChild(lbl);
           wrap.appendChild(input);
-          if(item[field] && /^https?:\/\//i.test(item[field].trim())){
-            var a = document.createElement('a');
-            a.href = item[field].trim();
-            a.target = '_blank';
-            a.rel = 'noopener';
-            a.className = 'task-link-open';
-            a.textContent = '🔗 開啟';
-            wrap.appendChild(a);
-          }
           return wrap;
         }
+
         var linksRow = document.createElement('div');
         linksRow.className = 'task-links-row' + (status ? ' status-'+status : '');
-        linksRow.appendChild(makeLinkField('參考資料', 'ref_link', '參考網站／靈感連結…'));
-        linksRow.appendChild(makeLinkField('上傳檔案', 'file_link', '雲端硬碟上傳檔案連結…'));
+        var isEditing = !!linkEditorOpen[item.id];
+
+        if(isEditing){
+          linksRow.appendChild(makeLinkEditInput('參考資料', 'ref_link', '參考網站／靈感連結…'));
+          linksRow.appendChild(makeLinkEditInput('上傳檔案', 'file_link', '雲端硬碟上傳檔案連結…'));
+          var doneEditBtn = document.createElement('button');
+          doneEditBtn.className = 'task-link-edit-toggle';
+          doneEditBtn.textContent = '完成';
+          doneEditBtn.addEventListener('click', function(){
+            delete linkEditorOpen[item.id];
+            renderChecklist();
+          });
+          linksRow.appendChild(doneEditBtn);
+        }else{
+          var refLinkEl = makeLinkField('參考資料', '🔗', 'ref_link');
+          var fileLinkEl = makeLinkField('上傳檔案', '📁', 'file_link');
+          if(refLinkEl) linksRow.appendChild(refLinkEl);
+          if(fileLinkEl) linksRow.appendChild(fileLinkEl);
+          var editBtn = document.createElement('button');
+          editBtn.className = 'task-link-edit-toggle';
+          editBtn.textContent = '✎ 編輯連結';
+          editBtn.addEventListener('click', function(){
+            linkEditorOpen[item.id] = true;
+            renderChecklist();
+          });
+          linksRow.appendChild(editBtn);
+        }
 
         block.appendChild(row);
         block.appendChild(descRow);
