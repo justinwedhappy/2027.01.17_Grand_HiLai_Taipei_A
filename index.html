@@ -123,45 +123,58 @@
   .task-row.status-overdue{background:#FBE2E2;}
   .task-row.status-soon{background:#FBF0D2;}
   .task-row.status-done{background:#EFEFEF;}
-  .task-links-row{
-    display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;
-    padding:0 20px 12px 39px;
+  .task-meta-row{
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    padding:2px 20px 10px 39px;
   }
-  .task-links-row.status-overdue{background:#FBE2E2;}
-  .task-links-row.status-soon{background:#FBF0D2;}
-  .task-links-row.status-done{background:#EFEFEF;}
-  .task-links-row a.task-link-open{
-    font-size:.78rem; font-weight:600; color:var(--white); background:var(--wine);
-    padding:5px 14px; border-radius:16px; text-decoration:none; white-space:nowrap;
+  .task-meta-row.status-overdue{background:#FBE2E2;}
+  .task-meta-row.status-soon{background:#FBF0D2;}
+  .task-meta-row.status-done{background:#EFEFEF;}
+  .task-desc-inline{
+    font-size:.8rem; font-style:italic; color:var(--charcoal-soft); cursor:pointer;
+    flex:1 1 auto; min-width:120px;
   }
-  .task-links-row a.task-link-open:hover{background:var(--wine-deep);}
-  .task-links-row{align-items:center;}
-  .task-link-edit-toggle{
-    font-size:.74rem; color:var(--charcoal-soft); background:none; border:1px dashed var(--line);
-    padding:4px 12px; border-radius:16px;
-  }
-  .task-link-edit-toggle:hover{border-color:var(--wine); color:var(--wine);}
-  .task-link-edit-field{display:flex; align-items:center; gap:8px; flex:1 1 220px; min-width:180px;}
-  .task-link-edit-field label{font-size:.72rem; color:var(--charcoal-soft); flex:none; width:52px;}
-  .task-link-edit-field input{
-    flex:1; font-size:.78rem; padding:5px 8px; border:1px solid var(--line);
+  .task-desc-inline:hover{color:var(--wine);}
+  .task-meta-row input{
+    flex:1 1 200px; min-width:160px; font-size:.8rem; padding:5px 8px; border:1px solid var(--line);
     border-radius:2px; background:var(--white); color:var(--charcoal-soft);
   }
-  .task-del{background:none; border:none; color:var(--charcoal-soft); font-size:.78rem; text-decoration:underline; flex:none;}
-  .task-desc-row{padding:0 20px 10px 39px;}
-  .task-desc-row.status-overdue{background:#FBE2E2;}
-  .task-desc-row.status-soon{background:#FBF0D2;}
-  .task-desc-row.status-done{background:#EFEFEF;}
-  .task-desc{
-    width:100%; font-size:.8rem; font-style:italic; color:var(--charcoal-soft);
-    border:none; background:none; padding:2px;
+  .task-meta-row a.task-link-open{
+    font-size:.78rem; font-weight:600; color:var(--white); background:var(--wine);
+    padding:5px 14px; border-radius:16px; text-decoration:none; white-space:nowrap; flex:none;
   }
-  .task-desc:focus{background:var(--ivory); outline:none; font-style:normal;}
+  .task-meta-row a.task-link-open:hover{background:var(--wine-deep);}
+  .task-link-edit-toggle{
+    font-size:.74rem; color:var(--charcoal-soft); background:none; border:1px dashed var(--line);
+    padding:4px 12px; border-radius:16px; flex:none; white-space:nowrap;
+  }
+  .task-link-edit-toggle:hover{border-color:var(--wine); color:var(--wine);}
+  .task-del{background:none; border:none; color:var(--charcoal-soft); font-size:.78rem; text-decoration:underline; flex:none;}
   .add-task-row{display:flex; gap:8px; padding:12px 20px; border-top:1px dashed var(--line); flex-wrap:wrap;}
   .add-task-row input{flex:1; min-width:120px; padding:8px 10px; border:1px solid var(--line); border-radius:2px; font-size:.85rem;}
   .add-task-row button{padding:8px 16px; background:var(--wine); color:var(--white); border:none; border-radius:2px; font-size:.82rem;}
 
   /* ---------- itinerary ---------- */
+  .itin-export-row{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:16px;}
+  .itin-export-row button{
+    padding:8px 16px; border:1px solid var(--wine); background:var(--white); color:var(--wine);
+    border-radius:20px; font-size:.82rem;
+  }
+  .itin-export-row button:hover{background:var(--wine); color:var(--white);}
+  .itin-export-updated{font-size:.76rem; color:var(--charcoal-soft);}
+
+  .print-only{display:none;}
+  @media print{
+    header, .tabnav-shell, .sync-bar, .section-head p, .itin-export-row,
+    .props-checklist, .add-itin-row, .save-note, footer, .itin-del,
+    .panel:not(#panel-itinerary){display:none !important;}
+    #panel-itinerary{display:block !important; padding:0;}
+    .print-only{display:block;}
+    .itin-cell{white-space:pre-wrap;}
+    table.itin-table th{background:#F3D9DF !important; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+    body{background:#fff;}
+  }
+
   .itin-table-wrap{border:1.5px solid var(--line); background:var(--white); overflow-x:auto;}
   table.itin-table{width:100%; border-collapse:collapse; table-layout:fixed;}
   table.itin-table th{
@@ -215,6 +228,7 @@
   }
   .vendor-cell:focus{background:var(--ivory);}
   .vendor-cell.empty::before{content:attr(data-placeholder); color:var(--charcoal-soft); opacity:.6;}
+  .vendor-cell.muted-value{color:var(--charcoal-soft); opacity:.55;}
   .vendor-del{background:none; border:none; color:var(--charcoal-soft); font-size:.78rem; text-decoration:underline;}
   .add-vendor-row{padding:14px 20px; border-top:1px dashed var(--line);}
 
@@ -280,6 +294,7 @@
 
   footer{padding:30px 0; text-align:center; font-size:.78rem; color:var(--charcoal-soft);}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -343,17 +358,23 @@
       <p>台北漢來大飯店・晚宴，以下為草案流程，可直接點擊修改時間、流程、音樂、投影幕、道具與備註，實際時間將依現場狀況於婚禮前確認定案。</p>
     </div>
 
+    <div class="print-only" id="printHeader">
+      <h2 style="margin-bottom:6px;">2027/01/17 王品凱 &amp; 葉品妤 婚禮當天流程</h2>
+      <p style="font-size:.85rem; color:#555; margin-bottom:16px;">台北漢來大飯店・晚宴　|　資料更新時間：<span id="printUpdatedTime"></span></p>
+    </div>
+
     <div class="itin-table-wrap">
       <table class="itin-table">
         <thead>
           <tr>
-            <th style="width:8%;">時間</th>
-            <th style="width:14%;">大綱</th>
-            <th style="width:20%;">概要內容</th>
-            <th style="width:16%;">🎵 音樂</th>
-            <th style="width:16%;">🖥 投影幕</th>
-            <th style="width:14%;">🎁 道具</th>
-            <th style="width:12%;">備註</th>
+            <th style="width:7%;">開始時間</th>
+            <th style="width:7%;">結束時間</th>
+            <th style="width:12%;">大綱</th>
+            <th style="width:18%;">概要內容</th>
+            <th style="width:14%;">🎵 音樂</th>
+            <th style="width:14%;">🖥 投影幕</th>
+            <th style="width:13%;">🎁 道具</th>
+            <th style="width:11%;">備註</th>
             <th style="width:40px;"></th>
           </tr>
         </thead>
@@ -361,6 +382,12 @@
       </table>
     </div>
     <div class="add-itin-row"><button id="addItinBtn">＋ 新增流程項目</button></div>
+
+    <div class="itin-export-row">
+      <button id="exportExcelBtn">⬇ 下載 Excel</button>
+      <button id="exportPdfBtn">⬇ 下載 PDF</button>
+      <span class="itin-export-updated" id="itinUpdatedLabel"></span>
+    </div>
     <p class="save-note">＊此流程為草案，建議於婚禮前 2 週與總召進行最終確認會議後定案。</p>
 
     <div class="props-checklist" id="propsChecklist">
@@ -385,11 +412,11 @@
             <th style="width:9%;">聯絡人</th>
             <th style="width:10%;">電話</th>
             <th style="width:9%;">到場時間</th>
-            <th style="width:16%;">備註</th>
             <th style="width:7%;">工作人員人數</th>
             <th style="width:6%;">葷食</th>
             <th style="width:6%;">素食</th>
             <th style="width:9%;">飲食禁忌</th>
+            <th style="width:16%;">備註</th>
             <th style="width:40px;"></th>
           </tr>
         </thead>
@@ -493,6 +520,15 @@
     return String(v);
   }
 
+  var lastSyncTime = null;
+  function updateExportLabels(){
+    var text = lastSyncTime ? ('資料更新時間：' + lastSyncTime) : '';
+    var lbl = document.getElementById('itinUpdatedLabel');
+    if(lbl) lbl.textContent = text;
+    var printLbl = document.getElementById('printUpdatedTime');
+    if(printLbl) printLbl.textContent = lastSyncTime || '';
+  }
+
   async function loadAll(silent){
     if(!isConfigured){
       setSyncStatus('⚠️ 尚未設定 Google Apps Script 連線，請完成設定後在程式碼中貼上 APPS_SCRIPT_URL。', true);
@@ -513,6 +549,8 @@
       renderPropsChecklist();
       renderVendors();
       if(paymentsUnlocked) renderPayments();
+      lastSyncTime = new Date().toLocaleString('zh-TW');
+      updateExportLabels();
       setSyncStatus('已同步（' + new Date().toLocaleTimeString('zh-TW') + '）');
     }catch(e){
       console.error('Sync load error', e);
@@ -547,11 +585,13 @@
   }, 20000);
 
   function normalizeChecklistRow(r){
-    return {id:toStr(r.id), phase:toStr(r.phase), category:toStr(r.category), text:toStr(r.text), done:toBool(r.done), desc:toStr(r.desc), link:toStr(r.link), order:toNum(r.order)};
+    return {id:toStr(r.id), phase:toStr(r.phase), category:toStr(r.category), text:toStr(r.text), done:toBool(r.done), desc:toStr(r.desc), ref_link:toStr(r.ref_link), file_link:toStr(r.file_link), order:toNum(r.order)};
   }
   function normalizeItinRow(r){
     return {
-      id:toStr(r.id), time:toStr(r['時間']!==undefined ? r['時間'] : r.time),
+      id:toStr(r.id),
+      time:toStr(r['開始時間']!==undefined ? r['開始時間'] : (r['時間']!==undefined ? r['時間'] : r.time)),
+      end_time:toStr(r['結束時間']!==undefined ? r['結束時間'] : r.end_time),
       outline:toStr(r['大綱']!==undefined ? r['大綱'] : r.outline),
       summary:toStr(r['概要內容']!==undefined ? r['概要內容'] : (r['概要說明']!==undefined ? r['概要說明'] : r.summary)),
       music:toStr(r['音樂']||r.music), screen:toStr(r['投影幕']||r.screen),
@@ -726,9 +766,23 @@
         row.appendChild(del);
 
         var descEditorOpen = !!descEditorOpenMap[item.id];
-        var descRow = document.createElement('div');
-        descRow.className = 'task-desc-row' + (status ? ' status-'+status : '');
-        if(item.desc || descEditorOpen){
+        var isEditingLink = !!linkEditorOpen[item.id];
+
+        var metaRow = document.createElement('div');
+        metaRow.className = 'task-meta-row' + (status ? ' status-'+status : '');
+
+        // 說明文字（有內容才顯示，或正在編輯時顯示輸入框）
+        if(item.desc && !descEditorOpen){
+          var descText = document.createElement('span');
+          descText.className = 'task-desc-inline';
+          descText.textContent = item.desc;
+          descText.title = '點擊修改說明';
+          descText.addEventListener('click', function(){
+            descEditorOpenMap[item.id] = true;
+            renderChecklist();
+          });
+          metaRow.appendChild(descText);
+        }else if(descEditorOpen){
           var descInput = document.createElement('input');
           descInput.type = 'text';
           descInput.className = 'task-desc';
@@ -740,38 +794,29 @@
             postAction({action:'update', sheet:'Checklist', id:item.id, fields:{desc: item.desc}});
             renderChecklist();
           });
-          descRow.appendChild(descInput);
+          metaRow.appendChild(descInput);
         }
 
-        var makeLinkField = function(label, icon){
-          var url = (item.link || '').trim();
-          if(!/^https?:\/\//i.test(url)) return null; // 沒有連結就不呈現
-          var a = document.createElement('a');
-          a.href = url;
-          a.target = '_blank';
-          a.rel = 'noopener';
-          a.className = 'task-link-open';
-          a.textContent = icon + ' ' + label;
-          return a;
-        }
-        var makeLinkEditInput = function(placeholder){
-          var input = document.createElement('input');
-          input.type = 'text';
-          input.placeholder = placeholder;
-          input.value = item.link || '';
-          input.addEventListener('change', function(){
-            item.link = input.value;
-            postAction({action:'update', sheet:'Checklist', id:item.id, fields:{link: item.link}});
+        // 連結（有連結才顯示，或正在編輯時顯示輸入框）
+        if(isEditingLink){
+          var refInput = document.createElement('input');
+          refInput.type = 'text';
+          refInput.placeholder = '參考資料連結…';
+          refInput.value = item.ref_link || '';
+          refInput.addEventListener('change', function(){
+            item.ref_link = refInput.value;
+            postAction({action:'update', sheet:'Checklist', id:item.id, fields:{ref_link: item.ref_link}});
           });
-          return input;
-        }
-
-        var linksRow = document.createElement('div');
-        linksRow.className = 'task-links-row' + (status ? ' status-'+status : '');
-        var isEditing = !!linkEditorOpen[item.id];
-
-        if(isEditing){
-          linksRow.appendChild(makeLinkEditInput('參考網站／雲端連結…'));
+          metaRow.appendChild(refInput);
+          var fileInput = document.createElement('input');
+          fileInput.type = 'text';
+          fileInput.placeholder = '上傳檔案連結…';
+          fileInput.value = item.file_link || '';
+          fileInput.addEventListener('change', function(){
+            item.file_link = fileInput.value;
+            postAction({action:'update', sheet:'Checklist', id:item.id, fields:{file_link: item.file_link}});
+          });
+          metaRow.appendChild(fileInput);
           var doneEditBtn = document.createElement('button');
           doneEditBtn.className = 'task-link-edit-toggle';
           doneEditBtn.textContent = '完成';
@@ -779,10 +824,28 @@
             delete linkEditorOpen[item.id];
             renderChecklist();
           });
-          linksRow.appendChild(doneEditBtn);
+          metaRow.appendChild(doneEditBtn);
         }else{
-          var linkEl = makeLinkField('相關連結', '🔗');
-          if(linkEl) linksRow.appendChild(linkEl);
+          var refUrl = (item.ref_link || '').trim();
+          var fileUrl = (item.file_link || '').trim();
+          if(/^https?:\/\//i.test(refUrl)){
+            var refEl = document.createElement('a');
+            refEl.href = refUrl;
+            refEl.target = '_blank';
+            refEl.rel = 'noopener';
+            refEl.className = 'task-link-open';
+            refEl.textContent = '🔗 參考資料';
+            metaRow.appendChild(refEl);
+          }
+          if(/^https?:\/\//i.test(fileUrl)){
+            var fileEl = document.createElement('a');
+            fileEl.href = fileUrl;
+            fileEl.target = '_blank';
+            fileEl.rel = 'noopener';
+            fileEl.className = 'task-link-open';
+            fileEl.textContent = '📁 上傳檔案';
+            metaRow.appendChild(fileEl);
+          }
           var editBtn = document.createElement('button');
           editBtn.className = 'task-link-edit-toggle';
           editBtn.textContent = '✎ 編輯連結';
@@ -790,7 +853,7 @@
             linkEditorOpen[item.id] = true;
             renderChecklist();
           });
-          linksRow.appendChild(editBtn);
+          metaRow.appendChild(editBtn);
         }
 
         if(!item.desc && !descEditorOpen){
@@ -801,12 +864,11 @@
             descEditorOpenMap[item.id] = true;
             renderChecklist();
           });
-          linksRow.appendChild(addDescBtn);
+          metaRow.appendChild(addDescBtn);
         }
 
         block.appendChild(row);
-        if(descRow.childNodes.length) block.appendChild(descRow);
-        block.appendChild(linksRow);
+        block.appendChild(metaRow);
       });
 
       var addRow = document.createElement('div');
@@ -824,13 +886,13 @@
         var val = addInput.value.trim();
         if(!val) return;
         var maxOrder = state.Checklist.reduce(function(m,i){ return Math.max(m, i.order); }, 0);
-        var item = {id:newId('c'), phase:group.phase, category:addCategoryInput.value.trim(), text:val, done:false, desc:'', link:'', order:maxOrder+1};
+        var item = {id:newId('c'), phase:group.phase, category:addCategoryInput.value.trim(), text:val, done:false, desc:'', ref_link:'', file_link:'', order:maxOrder+1};
         state.Checklist.push(item);
         addInput.value = '';
         addCategoryInput.value = '';
         renderChecklist();
         updateProgress();
-        postAction({action:'add', sheet:'Checklist', fields:{id:item.id, phase:item.phase, category:item.category, text:item.text, done:'FALSE', desc:'', link:'', order:item.order}});
+        postAction({action:'add', sheet:'Checklist', fields:{id:item.id, phase:item.phase, category:item.category, text:item.text, done:'FALSE', desc:'', ref_link:'', file_link:'', order:item.order}});
       });
       addInput.addEventListener('keydown', function(e){ if(e.key === 'Enter') addBtn.click(); });
       addRow.appendChild(addCategoryInput);
@@ -844,7 +906,7 @@
 
   // ================= 婚禮流程 =================
   var ITIN_SHEET_COL = {
-    time: '時間', outline: '大綱', summary: '概要內容', music: '音樂', screen: '投影幕', props: '道具', note: '備註'
+    time: '開始時間', end_time: '結束時間', outline: '大綱', summary: '概要內容', music: '音樂', screen: '投影幕', props: '道具', note: '備註'
   };
 
   function makeItinCell(row, field, placeholder){
@@ -875,15 +937,46 @@
     return td;
   }
 
+  // ---------- 匯出 Excel / PDF ----------
+  function exportItinExcel(){
+    if(typeof XLSX === 'undefined'){
+      alert('匯出功能載入失敗，請檢查網路連線後重新整理頁面再試一次。');
+      return;
+    }
+    var rows = state.Itinerary.slice().sort(function(a,b){ return a.order - b.order; });
+    var updatedLine = ['資料更新時間：' + (lastSyncTime || '')];
+    var titleLine = ['2027/01/17 王品凱 & 葉品妤・婚禮當天流程（台北漢來大飯店・晚宴）'];
+    var header = ['開始時間','結束時間','大綱','概要內容','音樂','投影幕','道具','備註'];
+    var body = rows.map(function(r){
+      return [r.time, r.end_time, r.outline, r.summary, r.music, r.screen, r.props, r.note];
+    });
+    var aoa = [titleLine, updatedLine, [], header].concat(body);
+    var ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws['!cols'] = [{wch:8},{wch:8},{wch:14},{wch:26},{wch:20},{wch:20},{wch:18},{wch:26}];
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, '婚禮流程');
+    XLSX.writeFile(wb, '0117婚禮流程_' + (lastSyncTime || '').replace(/[\/: ]/g,'') + '.xlsx');
+  }
+
+  function exportItinPdf(){
+    window.print();
+  }
+
+  document.getElementById('exportExcelBtn').addEventListener('click', exportItinExcel);
+  document.getElementById('exportPdfBtn').addEventListener('click', exportItinPdf);
+
   function renderItin(){
     var tbody = document.getElementById('itinContainer');
     tbody.innerHTML = '';
     var rows = state.Itinerary.slice().sort(function(a,b){ return a.order - b.order; });
     rows.forEach(function(row){
       var tr = document.createElement('tr');
-      var timeTd = makeItinCell(row, 'time', '時間');
+      var timeTd = makeItinCell(row, 'time', '開始');
       timeTd.firstChild.classList.add('itin-time-cell');
       tr.appendChild(timeTd);
+      var endTd = makeItinCell(row, 'end_time', '結束');
+      endTd.firstChild.classList.add('itin-time-cell');
+      tr.appendChild(endTd);
       var outlineTd = makeItinCell(row, 'outline', '大綱…');
       outlineTd.firstChild.classList.add('itin-process-cell');
       tr.appendChild(outlineTd);
@@ -981,12 +1074,12 @@
 
   document.getElementById('addItinBtn').addEventListener('click', function(){
     var maxOrder = state.Itinerary.reduce(function(m,i){ return Math.max(m, i.order); }, 0);
-    var row = {id:newId('i'), time:'', outline:'', summary:'', music:'', screen:'', props:'', note:'', order:maxOrder+1};
+    var row = {id:newId('i'), time:'', end_time:'', outline:'', summary:'', music:'', screen:'', props:'', note:'', order:maxOrder+1};
     state.Itinerary.push(row);
     renderItin();
     renderPropsChecklist();
     postAction({action:'add', sheet:'Itinerary', fields:{
-      id:row.id, '時間':'', '大綱':'', '概要內容':'', '音樂':'', '投影幕':'', '道具':'', '備註':'', order:row.order
+      id:row.id, '開始時間':'', '結束時間':'', '大綱':'', '概要內容':'', '音樂':'', '投影幕':'', '道具':'', '備註':'', order:row.order
     }});
   });
 
@@ -994,6 +1087,11 @@
   var VENDOR_SHEET_COL = {
     staff_count: '工作人員人數', meat_count: '葷食', veg_count: '素食', dietary_restriction: '飲食禁忌'
   };
+  var VENDOR_MUTED_FIELDS = {staff_count:1, meat_count:1, veg_count:1}; // 這幾欄若填「不用」類似字樣要反灰
+  var MUTED_VALUE_WORDS = ['不用','不用填寫','不需要','無','免'];
+  function isMutedValue(v){
+    return MUTED_VALUE_WORDS.indexOf((v||'').trim()) > -1;
+  }
   function makeVendorCell(row, field, placeholder){
     var td = document.createElement('td');
     var cell = document.createElement('div');
@@ -1004,6 +1102,9 @@
       cell.classList.add('empty');
       cell.dataset.placeholder = placeholder;
     }
+    if(VENDOR_MUTED_FIELDS[field] && isMutedValue(row[field])){
+      cell.classList.add('muted-value');
+    }
     cell.addEventListener('focus', function(){
       cell.classList.remove('empty');
     });
@@ -1013,6 +1114,7 @@
       if(!val && placeholder){
         cell.classList.add('empty');
       }
+      cell.classList.toggle('muted-value', !!(VENDOR_MUTED_FIELDS[field] && isMutedValue(val)));
       var sheetField = VENDOR_SHEET_COL[field] || field;
       var fields = {};
       fields[sheetField] = val;
@@ -1036,11 +1138,11 @@
       tr.appendChild(makeVendorCell(row, 'contact', '聯絡人'));
       tr.appendChild(makeVendorCell(row, 'phone', '電話'));
       tr.appendChild(makeVendorCell(row, 'arrival', '到場時間'));
-      tr.appendChild(makeVendorCell(row, 'note', '備註'));
       tr.appendChild(makeVendorCell(row, 'staff_count', '人數'));
       tr.appendChild(makeVendorCell(row, 'meat_count', '葷食'));
       tr.appendChild(makeVendorCell(row, 'veg_count', '素食'));
       tr.appendChild(makeVendorCell(row, 'dietary_restriction', '飲食禁忌'));
+      tr.appendChild(makeVendorCell(row, 'note', '備註'));
       var delTd = document.createElement('td');
       var delBtn = document.createElement('button');
       delBtn.className = 'vendor-del';
@@ -1068,7 +1170,7 @@
   });
 
   // ================= 廠商尾款 =================
-  var PAYMENTS_PASSCODE = "justin2027"; // 可自行更換，僅為輕量保護，請勿用於存放高度敏感資料
+  var PAYMENTS_PASSCODE = "kaiyu"; // 可自行更換，僅為輕量保護，請勿用於存放高度敏感資料
   var paymentsUnlocked = false;
 
   function normalizePaymentRow(r){
