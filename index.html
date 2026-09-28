@@ -1087,10 +1087,15 @@
   var VENDOR_SHEET_COL = {
     staff_count: '工作人員人數', meat_count: '葷食', veg_count: '素食', dietary_restriction: '飲食禁忌'
   };
-  var VENDOR_MUTED_FIELDS = {staff_count:1, meat_count:1, veg_count:1}; // 這幾欄若填「不用」類似字樣要反灰
-  var MUTED_VALUE_WORDS = ['不用','不用填寫','不需要','無','免'];
+  var VENDOR_MUTED_FIELDS = {staff_count:1, meat_count:1, veg_count:1, dietary_restriction:1}; // 這幾欄若填「不用」類似字樣要反灰
+  // 判斷這格是不是「不用準備」的意思：
+  //  ・「不用／不需要／不必」可以接「準備、填寫、了、提供…」等常見字尾（例如：不用準備、不用填寫、不需要）
+  //  ・「無／免／沒有／N/A／-」必須是整格剛好只有這個字才算（避免把「無麩質」「無蔥蒜」這種真正的飲食禁忌誤判成不用）
+  var MUTED_A = /^\s*(不用|不需要?|不必)(準備|填寫|填|了|提供|供餐|用餐|餐點|安排|預留|訂|餐)?\s*[。.!！]?\s*$/;
+  var MUTED_B = /^\s*(無|免|沒有|n\/?a|[-－—–]+)\s*[。.!！]?\s*$/i;
   function isMutedValue(v){
-    return MUTED_VALUE_WORDS.indexOf((v||'').trim()) > -1;
+    var t = String(v == null ? '' : v);
+    return MUTED_A.test(t) || MUTED_B.test(t);
   }
   function makeVendorCell(row, field, placeholder){
     var td = document.createElement('td');
